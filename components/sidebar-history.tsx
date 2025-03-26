@@ -174,16 +174,16 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     });
 
     toast.promise(deletePromise, {
-      loading: 'Deleting chat...',
+      loading: 'Удаление чата...',
       success: () => {
         mutate((history) => {
           if (history) {
             return history.filter((h) => h.id !== id);
           }
         });
-        return 'Chat deleted successfully';
+        return 'Чат удален успешно';
       },
-      error: 'Failed to delete chat',
+      error: 'Не удалось удалить чат',
     });
 
     setShowDeleteDialog(false);
@@ -198,7 +198,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       <SidebarGroup>
         <SidebarGroupContent>
           <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
-            Login to save and revisit previous chats!
+            Войдите, чтобы сохранять и просматривать предыдущие чаты!
           </div>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -209,7 +209,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     return (
       <SidebarGroup>
         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Today
+          Сегодня
         </div>
         <SidebarGroupContent>
           <div className="flex flex-col">
@@ -293,7 +293,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.today.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Today
+                          Сегодня
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
@@ -313,7 +313,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.yesterday.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
-                          Yesterday
+                          Вчера
                         </div>
                         {groupedChats.yesterday.map((chat) => (
                           <ChatItem
@@ -333,7 +333,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.lastWeek.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
-                          Last 7 days
+                          Последние 7 дней
                         </div>
                         {groupedChats.lastWeek.map((chat) => (
                           <ChatItem
@@ -353,7 +353,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.lastMonth.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
-                          Last 30 days
+                          Последние 30 дней
                         </div>
                         {groupedChats.lastMonth.map((chat) => (
                           <ChatItem
@@ -373,7 +373,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.older.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50 mt-6">
-                          Older
+                          Ранее
                         </div>
                         {groupedChats.older.map((chat) => (
                           <ChatItem
@@ -398,16 +398,16 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Вы уверены?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              chat and remove it from our servers.
+              Это действие нельзя отменить. Это удалит ваш чат и удалит его с
+              наших серверов.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Отменить</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete}>
-              Continue
+              Продолжить
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
