@@ -29,11 +29,14 @@ export const myProvider = isTestEnvironment
       languageModels: {
         'chat-model': anthropicSonnet3_7ChatModel,
         'chat-model-reasoning': wrapLanguageModel({
-          model: groq('deepseek-r1-distill-llama-70b'),
+          model: anthropicSonnet3_7ChatModel,
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
         'title-model': anthropicSonnet3_7ChatModel,
-        'artifact-model': xai('grok-2-1212'),
+        'artifact-model': wrapLanguageModel({
+          model: anthropicSonnet3_7ChatModel,
+          middleware: extractReasoningMiddleware({ tagName: 'think' }),
+        }),
       },
       imageModels: {
         'small-model': xai.image('grok-2-image'),
