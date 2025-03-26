@@ -5,6 +5,7 @@ import {
 } from 'ai';
 import { groq } from '@ai-sdk/groq';
 import { xai } from '@ai-sdk/xai';
+import { anthropic } from '@ai-sdk/anthropic'
 import { isTestEnvironment } from '../constants';
 import {
   artifactModel,
@@ -12,6 +13,8 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+
+const anthropicSonnet3_7ChatModel = anthropic('claude-3-7-sonnet-20250219')
 
 export const myProvider = isTestEnvironment
   ? customProvider({
@@ -24,12 +27,12 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-1212'),
+        'chat-model': anthropicSonnet3_7ChatModel,
         'chat-model-reasoning': wrapLanguageModel({
           model: groq('deepseek-r1-distill-llama-70b'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
+        'title-model': anthropicSonnet3_7ChatModel,
         'artifact-model': xai('grok-2-1212'),
       },
       imageModels: {

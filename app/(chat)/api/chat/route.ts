@@ -40,6 +40,9 @@ export async function POST(request: Request) {
       selectedChatModel: string;
     } = await request.json();
 
+    console.log('selectedChatModel', selectedChatModel);
+    console.log('messages', messages);
+
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
@@ -159,6 +162,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    console.error('Error in chat API:', error);
     return new Response('An error occurred while processing your request!', {
       status: 404,
     });
