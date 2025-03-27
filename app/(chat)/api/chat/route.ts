@@ -87,6 +87,11 @@ export async function POST(request: Request) {
         const result = streamText({
           model: myProvider.languageModel(selectedChatModel),
           system: systemPrompt({ selectedChatModel }),
+          providerOptions: {
+            anthropic: {
+              cacheControl: 'ephemeral',
+            },
+          },
           messages,
           maxTokens: 4000,
           // TODO: check whether we need cache control ephemeral
