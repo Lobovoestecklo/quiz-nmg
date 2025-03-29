@@ -12,9 +12,11 @@ import {
   type SetStateAction,
   type ChangeEvent,
   memo,
+  startTransition,
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
+import { cn } from '@/lib/utils';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
@@ -23,6 +25,12 @@ import { Textarea } from './ui/textarea';
 import { SuggestedActions } from './suggested-actions';
 import equal from 'fast-deep-equal';
 import { UseChatHelpers } from '@ai-sdk/react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 function PureMultimodalInput({
   chatId,
@@ -37,6 +45,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
+  isWithScenarioInsert,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -50,6 +59,7 @@ function PureMultimodalInput({
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
+  isWithScenarioInsert?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -249,7 +259,11 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <AttachmentsButton
+          fileInputRef={fileInputRef}
+          status={status}
+          isWithScenarioInsert={isWithScenarioInsert}
+        />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -281,10 +295,94 @@ export const MultimodalInput = memo(
 function PureAttachmentsButton({
   fileInputRef,
   status,
+  isWithScenarioInsert,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers['status'];
+  isWithScenarioInsert?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+
+  if (isWithScenarioInsert) {
+    return (
+      <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenuTrigger
+          asChild
+          className={cn(
+            'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
+            // className,
+          )}
+        >
+          <Button
+            data-testid="attachments-button"
+            className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
+            disabled={status !== 'ready'}
+            variant="ghost"
+          >
+            <PaperclipIcon size={14} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-[300px]">
+          <DropdownMenuItem
+            // data-testid={`model-selector-item-${id}`}
+            // key={id}
+            onSelect={() => {
+              setOpen(false);
+
+              startTransition(() => {
+                console.log('hi');
+              });
+            }}
+            asChild
+          >
+            <button
+              type="button"
+              className="gap-4 group/item flex flex-row justify-between items-center w-full"
+            >
+              <div className="flex flex-col gap-1 items-start">
+                <div>Вставить свой сценарий</div>
+                <div className="text-xs text-muted-foreground">
+                  В виде текста или PDF-файл
+                </div>
+              </div>
+
+              {/* <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+                  <CheckCircleFillIcon />
+                </div> */}
+            </button>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            // data-testid={`model-selector-item-${id}`}
+            // key={id}
+            onSelect={() => {
+              setOpen(false);
+
+              startTransition(() => {
+                fileInputRef.current?.click();
+              });
+            }}
+            asChild
+          >
+            <button
+              type="button"
+              className="gap-4 group/item flex flex-row justify-between items-center w-full"
+            >
+              <div className="flex flex-col gap-1 items-start">
+                <div>(Beta) Вставить файл для контекста</div>
+                <div className="text-xs text-muted-foreground">
+                  Изображение или PDF-файл
+                </div>
+              </div>
+
+              {/* <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+                  <CheckCircleFillIcon />
+                </div> */}
+            </button>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
   return (
     <Button
       data-testid="attachments-button"

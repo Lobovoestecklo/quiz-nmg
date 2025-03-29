@@ -97,6 +97,7 @@ export function Chat({
               messages={messages}
               setMessages={setMessages}
               append={append}
+              isWithScenarioInsert={true}
             />
           )}
         </form>
