@@ -35,16 +35,52 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   });
 
   function convertToUIMessages(messages: Array<DBMessage>): Array<UIMessage> {
-    return messages.map((message) => ({
-      id: message.id,
-      parts: message.parts as UIMessage['parts'],
-      role: message.role as UIMessage['role'],
-      // Note: content will soon be deprecated in @ai-sdk/react
-      content: '',
-      createdAt: message.createdAt,
-      experimental_attachments:
-        (message.attachments as Array<Attachment>) ?? [],
-    }));
+    return messages.map((message) => {
+      // Extract text from parts to use as content
+      let content = '';
+
+      // Find the first text part to use as content
+      if (Array.isArray(message.parts)) {
+        const textPart = message.parts.find(
+          (part) => part.type === 'text' && part.text,
+        );
+        const toolInvocationPart = message.parts.find(
+          (part) => part.type === 'tool-invocation' && part.toolInvocation,
+        );
+        if (textPart && textPart.text) {
+          content = textPart.text;
+        } else if (
+          toolInvocationPart &&
+          toolInvocationPart.toolInvocation?.result?.content &&
+          toolInvocationPart.toolInvocation?.result?.title
+        ) {
+          content = `${toolInvocationPart.toolInvocation.result.title}: ${toolInvocationPart.toolInvocation.result.content}`;
+        } else if (message.parts.length > 0) {
+          // Fallback: use a space to avoid empty content
+          content = ' ';
+        }
+      }
+
+      return {
+        id: message.id,
+        parts: message.parts as UIMessage['parts'],
+        role: message.role as UIMessage['role'],
+        content: content, // Use extracted content instead of empty string
+        createdAt: message.createdAt,
+        experimental_attachments:
+          (message.attachments as Array<Attachment>) ?? [],
+      };
+    });
+    // return messages.map((message) => ({
+    //   id: message.id,
+    //   parts: message.parts as UIMessage['parts'],
+    //   role: message.role as UIMessage['role'],
+    //   // Note: content will soon be deprecated in @ai-sdk/react
+    //   content: '',
+    //   createdAt: message.createdAt,
+    //   experimental_attachments:
+    //     (message.attachments as Array<Attachment>) ?? [],
+    // }));
   }
 
   const cookieStore = await cookies();

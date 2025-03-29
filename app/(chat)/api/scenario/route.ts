@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     // Create message parts with tool invocation
     const messageParts = [
-      { type: 'text', text: '' },
+      { type: 'text', text: 'Создаю новый сценарий...' },
       {
         type: 'tool-invocation',
         toolInvocation: {
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       },
       {
         type: 'text',
-        text: ``,
+        text: `Сценарий ${title} успешно создан.`,
       },
     ];
 
