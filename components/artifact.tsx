@@ -1,5 +1,6 @@
 import type { Attachment, UIMessage } from 'ai';
 import { formatDistance } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   type Dispatch,
@@ -417,15 +418,16 @@ function PureArtifact({
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
-                      Saving changes...
+                      Сохраняю...
                     </div>
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">
-                      {`Updated ${formatDistance(
+                      {`Обновлено ${formatDistance(
                         new Date(document.createdAt),
                         new Date(),
                         {
                           addSuffix: true,
+                          locale: ru,
                         },
                       )}`}
                     </div>
