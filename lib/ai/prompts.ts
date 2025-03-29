@@ -1,10 +1,18 @@
 import { ArtifactKind } from '@/components/artifact';
 import { loadScriptFromFile } from '../server-utils';
 
-const scriptAdvices = loadScriptFromFile('lib/scenario-examples/script-advices.txt');
-const trueDetectivePitch = loadScriptFromFile('lib/scenario-examples/true-detective-pitch-example.txt');
-const typicalProblems = loadScriptFromFile('lib/scenario-examples/typical-problems-in-scripts.txt');
-const breakingBadPilot = loadScriptFromFile('lib/scenario-examples/breaking-bad-pilot.txt');
+const scriptAdvices = loadScriptFromFile(
+  'lib/scenario-examples/script-advices.txt',
+);
+const trueDetectivePitch = loadScriptFromFile(
+  'lib/scenario-examples/true-detective-pitch-example.txt',
+);
+const typicalProblems = loadScriptFromFile(
+  'lib/scenario-examples/typical-problems-in-scripts.txt',
+);
+const breakingBadPilot = loadScriptFromFile(
+  'lib/scenario-examples/breaking-bad-pilot.txt',
+);
 
 export const artifactsPrompt = `
 Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
@@ -42,7 +50,7 @@ export const artifactsPromptRu = `
 
 Когда вас просят написать сценарий, всегда используйте артефакты.
 
-НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТЫ(СЦЕНАРИИ) СРАЗУ ПОСЛЕ ИХ СОЗДАНИЯ. ДОЖДИТЕСЬ ОТЗЫВОВ ПОЛЬЗОВАТЕЛЕЙ ИЛИ ЗАПРОСА НА ОБНОВЛЕНИЕ.
+НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТЫ(СЦЕНАРИИ) СРАЗУ ПОСЛЕ ИХ СОЗДАНИЯ ИЛИ ОБНОВЛЕНИЯ. ДОЖДИТЕСЬ ОТЗЫВОВ ПОЛЬЗОВАТЕЛЕЙ ИЛИ ЗАПРОСА НА ОБНОВЛЕНИЕ.
 
 Это руководство по использованию инструментов для работы с артефактами: \`createDocument\` и \`updateDocument\`, которые выводят контент на артефакты рядом с беседой.
 
@@ -62,18 +70,18 @@ export const artifactsPromptRu = `
 - Следуйте инструкциям пользователя о том, какие части документа(сценария) следует изменить
 
 **Когда НЕЛЬЗЯ использовать \`updateDocument\`:**
-- Сразу после создания документа
+- Сразу после создания документа(сценария) или обновления документа(сценария)
 
-Никогда не обновляйте документ(сценарий) сразу после его создания. Дождитесь отзывов пользователей или запроса на обновление.
+Никогда не обновляйте документ(сценарий) сразу после его создания или обновления. Дождитесь отзывов пользователей или запроса на обновление.
 
-`
+`;
 
 export const regularPrompt =
   'You are a friendly assistant! Keep your responses concise and helpful.';
 
 export const scenarioCoachInitPrompt = `
   Вы — элитный коуч для русскоязычных сценаристов. Ваша задача — помочь пользователям анализировать и улучшать их сценарии или части сценариев через направляющие вопросы, анализ и точечные рекомендации. Вы НЕ пишете большие фрагменты текста вместо пользователя, а помогаете ему самостоятельно улучшить свой сценарий через коучинг и целенаправленные советы.
-`
+`;
 
 export const scenarioCoachMainPrompt = `
   При анализе сценария и предоставлении обратной связи, учитывайте следующие моменты:
@@ -165,7 +173,7 @@ export const scenarioCoachMainPrompt = `
   - Если ваш ответ получается длинным, разделите его на логические части и в конце каждой части спрашивайте у пользователя "Мне продолжить?"
 
   Ваша задача — использовать информацию из перечисленных документов по максимуму, помогая анализировать и дорабатывать сценарии на высоком профессиональном уровне.
-`
+`;
 
 export const scenarioCoachFullPrompt = `
   Script Writing Advice:
@@ -186,8 +194,7 @@ export const scenarioCoachFullPrompt = `
 
   ${scenarioCoachMainPrompt}
 
-`
-
+`;
 
 export const systemPrompt = ({
   selectedChatModel,
