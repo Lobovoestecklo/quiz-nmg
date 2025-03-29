@@ -31,6 +31,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
 
 function PureMultimodalInput({
   chatId,
@@ -263,6 +264,10 @@ function PureMultimodalInput({
           fileInputRef={fileInputRef}
           status={status}
           isWithScenarioInsert={isWithScenarioInsert}
+          chatId={chatId}
+          // TODO add functionality to set title
+          title={'Мой сценарий'}
+          content={'...'}
         />
       </div>
 
@@ -296,12 +301,57 @@ function PureAttachmentsButton({
   fileInputRef,
   status,
   isWithScenarioInsert,
+  chatId,
+  title,
+  content,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers['status'];
   isWithScenarioInsert?: boolean;
+  chatId?: string;
+  title?: string;
+  content?: string;
 }) {
   const [open, setOpen] = useState(false);
+
+  const router = useRouter();
+
+  const handleScenarioInsert = useCallback(async () => {
+    if (!isWithScenarioInsert || !chatId || !title || !content) return;
+    try {
+      const response = await fetch('/api/scenario', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chatId,
+          title,
+          content,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create scenario');
+      }
+
+      const result: any = await response.json();
+
+      const { chatId: scenarioChatId, isNewChat } = result;
+      console.log('scenarioChatId', scenarioChatId);
+      console.log('isNewChat', isNewChat);
+      if (isNewChat) {
+        toast.success('Сценарий успешно создан');
+        router.push(`/chat/${scenarioChatId}`);
+      } else {
+        toast.success('Сценарий успешно добавлен');
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Error creating scenario:', error);
+      toast.error('Не удалось создать сценарий');
+    }
+  }, [isWithScenarioInsert, chatId, title, content]);
 
   if (isWithScenarioInsert) {
     return (
@@ -330,7 +380,7 @@ function PureAttachmentsButton({
               setOpen(false);
 
               startTransition(() => {
-                console.log('hi');
+                handleScenarioInsert();
               });
             }}
             asChild
