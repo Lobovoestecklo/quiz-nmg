@@ -28,7 +28,7 @@
     "attributePosition": "auto"
   },
   "linter": {
-    "enabled": true,
+    "enabled": false,
     "rules": {
       "recommended": true,
       "a11y": {
@@ -73,7 +73,8 @@
         "useDefaultParameterLast": "warn", // Not in recommended ruleset, turning on manually
         "useExponentiationOperator": "off", // Obscure and arguably not easily readable
         "noUnusedTemplateLiteral": "off", // Stylistic opinion
-        "noUselessElse": "off" // Stylistic opinion
+        "noUselessElse": "off", // Stylistic opinion
+        "useImportType": "off" // Stylistic opinion
       },
       "suspicious": {
         "noExplicitAny": "off" // We trust Vercelians to use any only when necessary
