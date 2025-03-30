@@ -14,43 +14,15 @@ const breakingBadPilot = loadScriptFromFile(
   'lib/scenario-examples/breaking-bad-pilot.txt',
 );
 
-export const artifactsPrompt = `
-Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
-
-When asked to write code, always use artifacts. When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
-
-DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
-
-This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a artifacts beside the conversation.
-
-**When to use \`createDocument\`:**
-- For substantial content (>10 lines) or code
-- For content users will likely save/reuse (emails, code, essays, etc.)
-- When explicitly requested to create a document
-- For when content contains a single code snippet
-
-**When NOT to use \`createDocument\`:**
-- For informational/explanatory content
-- For conversational responses
-- When asked to keep it in chat
-
-**Using \`updateDocument\`:**
-- Default to full document rewrites for major changes
-- Use targeted updates only for specific, isolated changes
-- Follow user instructions for which parts to modify
-
-**When NOT to use \`updateDocument\`:**
-- Immediately after creating a document
-
-Do not update document right after creating it. Wait for user feedback or request to update it.
-`;
-
 export const artifactsPromptRu = `
 Артефакты - это специальный режим пользовательского интерфейса, который помогает пользователям писать, редактировать и выполнять другие задачи по созданию контента. Когда артефакт открыт, он находится в правой части экрана, а беседа - в левой. При создании или обновлении документов изменения в реальном времени отражаются на артефактах и видны пользователю.
 
 Когда вас просят написать сценарий, всегда используйте артефакты.
 
-НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТЫ(СЦЕНАРИИ) СРАЗУ ПОСЛЕ ИХ СОЗДАНИЯ ИЛИ ОБНОВЛЕНИЯ. ДОЖДИТЕСЬ ОТЗЫВОВ ПОЛЬЗОВАТЕЛЕЙ ИЛИ ЗАПРОСА НА ОБНОВЛЕНИЕ.
+НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТЫ(СЦЕНАРИИ) СРАЗУ ПОСЛЕ ИХ СОЗДАНИЯ. ДОЖДИТЕСЬ ОТЗЫВОВ ПОЛЬЗОВАТЕЛЕЙ ИЛИ ЗАПРОСА НА ОБНОВЛЕНИЕ.
+НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТЫ(СЦЕНАРИИ) СРАЗУ ПОСЛЕ ИХ ОБНОВЛЕНИЯ. ВСЕГДА ЖДИТЕ ЗАПРОСА ОТ ПОЛЬЗОВАТЕЛЯ НА ОБНОВЛЕНИЕ.
+
+НЕ ВЫЗЫВАЙТЕ updateDocument БОЛЕЕ ОДНОГО РАЗА В ОДНОМ ОТВЕТЕ.
 
 Это руководство по использованию инструментов для работы с артефактами: \`createDocument\` и \`updateDocument\`, которые выводят контент на артефакты рядом с беседой.
 
@@ -65,15 +37,20 @@ export const artifactsPromptRu = `
 - Когда просят оставить его в чате
 
 **Использование \`updateDocument\`:**
+- НЕ ВЫЗЫВАЙТЕ updateDocument БОЛЕЕ ОДНОГО РАЗА В ОДНОМ ОТВЕТЕ
+- НЕ ОБНОВЛЯЙТЕ ДОКУМЕНТ БОЛЕЕ ОДНОГО РАЗА БЕЗ ЯВНОГО ЗАПРОСА ОТ ПОЛЬЗОВАТЕЛЯ
 - По умолчанию полностью переписывайте документ для крупных изменений
 - Используйте целевые обновления только для конкретных, изолированных изменений
 - Следуйте инструкциям пользователя о том, какие части документа(сценария) следует изменить
 
 **Когда НЕЛЬЗЯ использовать \`updateDocument\`:**
-- Сразу после создания документа(сценария) или обновления документа(сценария)
+- Сразу после создания документа(сценария)
+- Сразу после обновления документа(сценария)
+- Когда пользователь явно не запросил изменения
 
 Никогда не обновляйте документ(сценарий) сразу после его создания или обновления. Дождитесь отзывов пользователей или запроса на обновление.
 
+После успешного обновления документа, НЕ ПРЕДЛАГАЙТЕ дополнительные обновления. Вместо этого, сообщите пользователю, что документ обновлен и спросите, требуются ли дополнительные изменения.
 `;
 
 export const regularPrompt =
