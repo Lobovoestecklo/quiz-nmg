@@ -8,6 +8,7 @@ import {
   type SetStateAction,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
@@ -16,6 +17,7 @@ import type { Document, Vote } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { MultimodalInput } from './multimodal-input';
 import { Toolbar } from './toolbar';
+import { SecondaryToolbar } from './secondary-toolbar';
 import { VersionFooter } from './version-footer';
 import { ArtifactActions } from './artifact-actions';
 import { ArtifactCloseButton } from './artifact-close-button';
@@ -123,6 +125,7 @@ function PureArtifact({
 
   const { mutate } = useSWRConfig();
   const [isContentDirty, setIsContentDirty] = useState(false);
+  const [currentContent, setCurrentContent] = useState<string | null>(null);
 
   const handleContentChange = useCallback(
     (updatedContent: string) => {
@@ -173,8 +176,29 @@ function PureArtifact({
     2000,
   );
 
+  // TODO refactor this
   const saveContent = useCallback(
     (updatedContent: string, debounce: boolean) => {
+      // console.log('updating content');
+      // console.log('updatedContent', updatedContent);
+      // console.log('debounce', debounce);
+      // if (document && updatedContent !== document.content) {
+      //   setIsContentDirty(true);
+      //   if (debounce) {
+      //     debouncedHandleContentChange(updatedContent);
+      //   } else {
+      //     handleContentChange(updatedContent);
+      //   }
+      // }
+    },
+    [document, debouncedHandleContentChange, handleContentChange],
+  );
+
+  const saveContent2 = useCallback(
+    (updatedContent: string, debounce: boolean) => {
+      console.log('updating content');
+      console.log('updatedContent', updatedContent);
+      console.log('debounce', debounce);
       if (document && updatedContent !== document.content) {
         setIsContentDirty(true);
 
@@ -187,6 +211,14 @@ function PureArtifact({
     },
     [document, debouncedHandleContentChange, handleContentChange],
   );
+
+  const isContentDirty2 = useMemo(() => {
+    if (document && currentContent !== document.content) {
+      return true;
+    }
+
+    return false;
+  }, [document, currentContent]);
 
   function getDocumentContentById(index: number) {
     if (!documents) return '';
@@ -218,6 +250,8 @@ function PureArtifact({
   };
 
   const [isToolbarVisible, setIsToolbarVisible] = useState(false);
+  const [isSecondaryToolbarVisible, setIsSecondaryToolbarVisible] =
+    useState(false);
 
   /*
    * NOTE: if there are no documents, or if
@@ -416,9 +450,9 @@ function PureArtifact({
                 <div className="flex flex-col">
                   <div className="font-medium">{artifact.title}</div>
 
-                  {isContentDirty ? (
+                  {isContentDirty2 ? (
                     <div className="text-sm text-muted-foreground">
-                      Сохраняю...
+                      Добавлены изменения в сценарий, нажмите сохранить
                     </div>
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">
@@ -445,6 +479,7 @@ function PureArtifact({
                 mode={mode}
                 metadata={metadata}
                 setMetadata={setMetadata}
+                isContentDirty={isContentDirty2}
               />
             </div>
 
@@ -467,9 +502,11 @@ function PureArtifact({
                 isLoading={isDocumentsFetching && !artifact.content}
                 metadata={metadata}
                 setMetadata={setMetadata}
+                isContentDirty={isContentDirty2}
+                setContent={setCurrentContent}
               />
 
-              <AnimatePresence>
+              {/* <AnimatePresence>
                 {isCurrentVersion && (
                   <Toolbar
                     isToolbarVisible={isToolbarVisible}
@@ -479,6 +516,21 @@ function PureArtifact({
                     stop={stop}
                     setMessages={setMessages}
                     artifactKind={artifact.kind}
+                  />
+                )}
+              </AnimatePresence> */}
+              <AnimatePresence>
+                {isContentDirty2 && isCurrentVersion && (
+                  <SecondaryToolbar
+                    isToolbarVisible={isSecondaryToolbarVisible}
+                    setIsToolbarVisible={setIsSecondaryToolbarVisible}
+                    append={append}
+                    status={status}
+                    stop={stop}
+                    setMessages={setMessages}
+                    artifactKind={artifact.kind}
+                    onSaveContent={saveContent2}
+                    content={currentContent}
                   />
                 )}
               </AnimatePresence>

@@ -13,6 +13,7 @@ import {
 import { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
+import { SaveIcon } from 'lucide-react';
 
 interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
@@ -66,6 +67,8 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     getDocumentContentById,
     isLoading,
     metadata,
+    isContentDirty,
+    setContent,
   }) => {
     if (isLoading) {
       return <DocumentSkeleton artifactKind="text" />;
@@ -88,6 +91,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
             currentVersionIndex={currentVersionIndex}
             status={status}
             onSaveContent={onSaveContent}
+            setContent={setContent}
           />
 
           {metadata &&
@@ -172,6 +176,15 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
           content:
             'Please add suggestions you have that could improve the writing.',
         });
+      },
+    },
+  ],
+  secondaryToolbar: [
+    {
+      icon: <SaveIcon size={18} />,
+      description: 'Save changes',
+      onClick: ({ content, onSaveContent }) => {
+        onSaveContent(content, false);
       },
     },
   ],

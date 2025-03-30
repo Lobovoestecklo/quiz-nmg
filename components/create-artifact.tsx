@@ -26,10 +26,21 @@ export type ArtifactToolbarContext = {
   appendMessage: UseChatHelpers['append'];
 };
 
+export type ArtifactSecondaryToolbarContext = {
+  content: string;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
+};
+
 export type ArtifactToolbarItem = {
   description: string;
   icon: ReactNode;
   onClick: (context: ArtifactToolbarContext) => void;
+};
+
+export type ArtifactSecondaryToolbarItem = {
+  description: string;
+  icon: ReactNode;
+  onClick: (context: ArtifactSecondaryToolbarContext) => void;
 };
 
 interface ArtifactContent<M = any> {
@@ -46,6 +57,8 @@ interface ArtifactContent<M = any> {
   isLoading: boolean;
   metadata: M;
   setMetadata: Dispatch<SetStateAction<M>>;
+  isContentDirty?: boolean;
+  setContent?: (updatedContent: string) => void;
 }
 
 interface InitializeParameters<M = any> {
@@ -59,6 +72,7 @@ type ArtifactConfig<T extends string, M = any> = {
   content: ComponentType<ArtifactContent<M>>;
   actions: Array<ArtifactAction<M>>;
   toolbar: ArtifactToolbarItem[];
+  secondaryToolbar?: ArtifactSecondaryToolbarItem[];
   initialize?: (parameters: InitializeParameters<M>) => void;
   onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
@@ -73,6 +87,7 @@ export class Artifact<T extends string, M = any> {
   readonly content: ComponentType<ArtifactContent<M>>;
   readonly actions: Array<ArtifactAction<M>>;
   readonly toolbar: ArtifactToolbarItem[];
+  readonly secondaryToolbar: ArtifactSecondaryToolbarItem[];
   readonly initialize?: (parameters: InitializeParameters) => void;
   readonly onStreamPart: (args: {
     setMetadata: Dispatch<SetStateAction<M>>;
@@ -86,6 +101,7 @@ export class Artifact<T extends string, M = any> {
     this.content = config.content;
     this.actions = config.actions || [];
     this.toolbar = config.toolbar || [];
+    this.secondaryToolbar = config.secondaryToolbar || [];
     this.initialize = config.initialize || (async () => ({}));
     this.onStreamPart = config.onStreamPart;
   }

@@ -25,10 +25,12 @@ export const handleTransaction = ({
   transaction,
   editorRef,
   onSaveContent,
+  setContent,
 }: {
   transaction: Transaction;
   editorRef: MutableRefObject<EditorView | null>;
   onSaveContent: (updatedContent: string, debounce: boolean) => void;
+  setContent?: (updatedContent: string) => void;
 }) => {
   if (!editorRef || !editorRef.current) return;
 
@@ -37,6 +39,7 @@ export const handleTransaction = ({
 
   if (transaction.docChanged && !transaction.getMeta('no-save')) {
     const updatedContent = buildContentFromDocument(newState.doc);
+    setContent?.(updatedContent);
 
     if (transaction.getMeta('no-debounce')) {
       onSaveContent(updatedContent, false);

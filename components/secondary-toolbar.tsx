@@ -1,5 +1,6 @@
 'use client';
 
+// TODO refactor and remove unused parts
 import type { Message } from 'ai';
 import cx from 'classnames';
 import {
@@ -28,10 +29,10 @@ import {
 
 import { ArrowUpIcon, StopIcon, SummarizeIcon } from './icons';
 import { artifactDefinitions, ArtifactKind } from './artifact';
-import { ArtifactToolbarItem } from './create-artifact';
+import { ArtifactSecondaryToolbarItem } from './create-artifact';
 import { UseChatHelpers } from '@ai-sdk/react';
 
-type ToolProps = {
+type SecondaryToolProps = {
   description: string;
   icon: ReactNode;
   selectedTool: string | null;
@@ -41,13 +42,17 @@ type ToolProps = {
   isAnimating: boolean;
   append: UseChatHelpers['append'];
   onClick: ({
-    appendMessage,
+    content,
+    onSaveContent,
   }: {
-    appendMessage: UseChatHelpers['append'];
+    content: string;
+    onSaveContent: (updatedContent: string, debounce: boolean) => void;
   }) => void;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
+  content: string | null;
 };
 
-const Tool = ({
+const SecondaryTool = ({
   description,
   icon,
   selectedTool,
@@ -56,8 +61,10 @@ const Tool = ({
   setIsToolbarVisible,
   isAnimating,
   append,
+  onSaveContent,
+  content,
   onClick,
-}: ToolProps) => {
+}: SecondaryToolProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -82,7 +89,14 @@ const Tool = ({
       setSelectedTool(description);
     } else {
       setSelectedTool(null);
-      onClick({ appendMessage: append });
+      console.log('clicked');
+      console.log('CLICKED CONTENT', content);
+      if (content !== null) {
+        onClick({
+          content,
+          onSaveContent,
+        });
+      }
     }
   };
 
@@ -239,7 +253,7 @@ const ReadingLevelSelector = ({
   );
 };
 
-export const Tools = ({
+export const SecondaryTools = ({
   isToolbarVisible,
   selectedTool,
   setSelectedTool,
@@ -247,6 +261,8 @@ export const Tools = ({
   isAnimating,
   setIsToolbarVisible,
   tools,
+  onSaveContent,
+  content,
 }: {
   isToolbarVisible: boolean;
   selectedTool: string | null;
@@ -254,7 +270,9 @@ export const Tools = ({
   append: UseChatHelpers['append'];
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  tools: Array<ArtifactToolbarItem>;
+  tools: Array<ArtifactSecondaryToolbarItem>;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
+  content: string | null;
 }) => {
   const [primaryTool, ...secondaryTools] = tools;
 
@@ -268,7 +286,7 @@ export const Tools = ({
       <AnimatePresence>
         {isToolbarVisible &&
           secondaryTools.map((secondaryTool) => (
-            <Tool
+            <SecondaryTool
               key={secondaryTool.description}
               description={secondaryTool.description}
               icon={secondaryTool.icon}
@@ -277,11 +295,13 @@ export const Tools = ({
               append={append}
               isAnimating={isAnimating}
               onClick={secondaryTool.onClick}
+              onSaveContent={onSaveContent}
+              content={content}
             />
           ))}
       </AnimatePresence>
 
-      <Tool
+      <SecondaryTool
         description={primaryTool.description}
         icon={primaryTool.icon}
         selectedTool={selectedTool}
@@ -291,12 +311,14 @@ export const Tools = ({
         append={append}
         isAnimating={isAnimating}
         onClick={primaryTool.onClick}
+        onSaveContent={onSaveContent}
+        content={content}
       />
     </motion.div>
   );
 };
 
-const PureToolbar = ({
+const PureSecondaryToolbar = ({
   isToolbarVisible,
   setIsToolbarVisible,
   append,
@@ -304,6 +326,8 @@ const PureToolbar = ({
   stop,
   setMessages,
   artifactKind,
+  onSaveContent,
+  content,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
@@ -312,6 +336,8 @@ const PureToolbar = ({
   stop: UseChatHelpers['stop'];
   setMessages: UseChatHelpers['setMessages'];
   artifactKind: ArtifactKind;
+  onSaveContent: (updatedContent: string, debounce: boolean) => void;
+  content: string | null;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -363,7 +389,7 @@ const PureToolbar = ({
     throw new Error('Artifact definition not found!');
   }
 
-  const toolsByArtifactKind = artifactDefinition.toolbar;
+  const toolsByArtifactKind = artifactDefinition.secondaryToolbar;
 
   if (toolsByArtifactKind.length === 0) {
     return null;
@@ -372,7 +398,7 @@ const PureToolbar = ({
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
-        className="cursor-pointer absolute right-6 bottom-[100px] p-1.5 border rounded-full shadow-lg bg-background flex flex-col justify-end"
+        className="cursor-pointer absolute right-6 bottom-6 p-1.5 border rounded-full shadow-lg bg-background flex flex-col justify-end"
         initial={{ opacity: 0, y: -20, scale: 1 }}
         animate={
           isToolbarVisible
@@ -436,7 +462,7 @@ const PureToolbar = ({
             isAnimating={isAnimating}
           />
         ) : (
-          <Tools
+          <SecondaryTools
             key="tools"
             append={append}
             isAnimating={isAnimating}
@@ -445,6 +471,8 @@ const PureToolbar = ({
             setIsToolbarVisible={setIsToolbarVisible}
             setSelectedTool={setSelectedTool}
             tools={toolsByArtifactKind}
+            onSaveContent={onSaveContent}
+            content={content}
           />
         )}
       </motion.div>
@@ -452,10 +480,13 @@ const PureToolbar = ({
   );
 };
 
-export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
-  if (prevProps.status !== nextProps.status) return false;
-  if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
-  if (prevProps.artifactKind !== nextProps.artifactKind) return false;
-
-  return true;
-});
+export const SecondaryToolbar = memo(
+  PureSecondaryToolbar,
+  (prevProps, nextProps) => {
+    if (prevProps.status !== nextProps.status) return false;
+    if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
+    if (prevProps.artifactKind !== nextProps.artifactKind) return false;
+    if (prevProps.content !== nextProps.content) return false;
+    return true;
+  },
+);
