@@ -100,21 +100,21 @@ export async function POST(request: Request) {
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
-                  'getWeather',
+                  // 'getWeather',
                   'createDocument',
                   'updateDocument',
-                  'requestSuggestions',
+                  //'requestSuggestions',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
           tools: {
-            getWeather,
+            // getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
-            requestSuggestions: requestSuggestions({
-              session,
-              dataStream,
-            }),
+            // requestSuggestions: requestSuggestions({
+            //   session,
+            //   dataStream,
+            // }),
           },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
