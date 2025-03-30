@@ -55,7 +55,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         title: document.title,
         kind: document.kind,
         content:
-          'Документ успешно обновлен. Пожалуйста, ОБЯЗАТЕЛЬНО дождитесь отзыва пользователя перед дальнейшими изменениями.',
+          'Документ успешно обновлен. Нельзя сразу вызывать updateDocument или createDocument в тот же запрос. Пожалуйста, ОБЯЗАТЕЛЬНО дождитесь отзыва пользователя перед дальнейшими изменениями.',
         justUpdated: true,
       };
     },
