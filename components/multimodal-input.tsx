@@ -268,6 +268,8 @@ function PureMultimodalInput({
           // TODO add functionality to set title
           title={'Мой сценарий'}
           content={'...'}
+          setMessages={setMessages}
+          messages={messages}
         />
       </div>
 
@@ -304,6 +306,8 @@ function PureAttachmentsButton({
   chatId,
   title,
   content,
+  setMessages,
+  messages,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers['status'];
@@ -311,6 +315,8 @@ function PureAttachmentsButton({
   chatId?: string;
   title?: string;
   content?: string;
+  setMessages: UseChatHelpers['setMessages'];
+  messages: Array<UIMessage>;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -337,7 +343,7 @@ function PureAttachmentsButton({
 
       const result: any = await response.json();
 
-      const { chatId: scenarioChatId, isNewChat } = result;
+      const { chatId: scenarioChatId, isNewChat, savedMessage } = result;
       console.log('scenarioChatId', scenarioChatId);
       console.log('isNewChat', isNewChat);
       if (isNewChat) {
@@ -345,7 +351,9 @@ function PureAttachmentsButton({
         router.push(`/chat/${scenarioChatId}`);
       } else {
         toast.success('Сценарий успешно добавлен');
-        router.refresh();
+        if (savedMessage) {
+          setMessages([...messages, savedMessage]);
+        }
       }
     } catch (error) {
       console.error('Error creating scenario:', error);
