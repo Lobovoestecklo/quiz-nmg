@@ -13,7 +13,7 @@ import { Button } from './ui/button';
 export function SidebarToggle({
   className,
 }: ComponentProps<typeof SidebarTrigger>) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, open } = useSidebar();
 
   return (
     <Tooltip>
@@ -26,7 +26,9 @@ export function SidebarToggle({
           <SidebarLeftIcon size={16} />
         </Button>
       </TooltipTrigger>
-      <TooltipContent align="start">Toggle Sidebar</TooltipContent>
+      <TooltipContent align="start">
+        {open ? 'Свернуть боковую панель' : 'Развернуть боковую панель'}
+      </TooltipContent>
     </Tooltip>
   );
 }

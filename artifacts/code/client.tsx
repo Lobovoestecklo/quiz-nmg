@@ -241,7 +241,7 @@ export const codeArtifact = new Artifact<'code', Metadata>({
       description: 'Copy code to clipboard',
       onClick: ({ content }) => {
         navigator.clipboard.writeText(content);
-        toast.success('Copied to clipboard!');
+        toast.success('Скопировано!');
       },
     },
   ],

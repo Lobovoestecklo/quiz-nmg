@@ -105,6 +105,8 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error('Failed to create scenario:', error);
-    return new Response('Failed to create scenario', { status: 500 });
+    return new Response('Произошла ошибка при создании сценария', {
+      status: 500,
+    });
   }
 }

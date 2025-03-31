@@ -46,13 +46,15 @@ export async function POST(request: Request) {
     const session = await auth();
 
     if (!session || !session.user || !session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Вы не авторизованы', { status: 401 });
     }
 
     const userMessage = getMostRecentUserMessage(messages);
 
     if (!userMessage) {
-      return new Response('No user message found', { status: 400 });
+      return new Response('Не найдено ни одного сообщения от пользователя', {
+        status: 400,
+      });
     }
 
     const chat = await getChatById({ id });
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
       await saveChat({ id, userId: session.user.id, title });
     } else {
       if (chat.userId !== session.user.id) {
-        return new Response('Unauthorized', { status: 401 });
+        return new Response('Вы не авторизованы', { status: 401 });
       }
     }
 
@@ -126,7 +128,9 @@ export async function POST(request: Request) {
                 });
 
                 if (!assistantId) {
-                  throw new Error('No assistant message found!');
+                  throw new Error(
+                    'Не найдено ни одного сообщения от сценарного коуча!',
+                  );
                 }
 
                 const [, assistantMessage] = appendResponseMessages({
@@ -148,7 +152,7 @@ export async function POST(request: Request) {
                   ],
                 });
               } catch (_) {
-                console.error('Failed to save chat');
+                console.error('Произошла ошибка при сохранении чата');
               }
             }
           },
@@ -166,12 +170,12 @@ export async function POST(request: Request) {
       },
       onError: (error) => {
         console.error('Error in chat API:', error);
-        return 'Oops, an error occured!';
+        return 'Произошла ошибка!';
       },
     });
   } catch (error) {
     console.error('Error in chat API:', error);
-    return new Response('An error occurred while processing your request!', {
+    return new Response('Произошла ошибка при обработке вашего запроса!', {
       status: 404,
     });
   }
@@ -182,27 +186,27 @@ export async function DELETE(request: Request) {
   const id = searchParams.get('id');
 
   if (!id) {
-    return new Response('Not Found', { status: 404 });
+    return new Response('Не найдено', { status: 404 });
   }
 
   const session = await auth();
 
   if (!session || !session.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Вы не авторизованы', { status: 401 });
   }
 
   try {
     const chat = await getChatById({ id });
 
     if (chat.userId !== session.user.id) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response('Вы не авторизованы', { status: 401 });
     }
 
     await deleteChatById({ id });
 
-    return new Response('Chat deleted', { status: 200 });
+    return new Response('Чат удален', { status: 200 });
   } catch (error) {
-    return new Response('An error occurred while processing your request!', {
+    return new Response('Произошла ошибка при обработке вашего запроса!', {
       status: 500,
     });
   }

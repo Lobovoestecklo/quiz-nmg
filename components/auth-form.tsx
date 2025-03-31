@@ -21,7 +21,7 @@ export function AuthForm({
           htmlFor="email"
           className="text-zinc-600 font-normal dark:text-zinc-400"
         >
-          Email Address
+          Email
         </Label>
 
         <Input
@@ -34,6 +34,14 @@ export function AuthForm({
           required
           autoFocus
           defaultValue={defaultEmail}
+          onInvalid={(e) => {
+            // @ts-ignore
+            e.target.setCustomValidity('Обязательное поле для заполнения!');
+          }}
+          onInput={(e) => {
+            // @ts-ignore
+            e.target.setCustomValidity('');
+          }}
         />
       </div>
 
@@ -42,7 +50,7 @@ export function AuthForm({
           htmlFor="password"
           className="text-zinc-600 font-normal dark:text-zinc-400"
         >
-          Password
+          Пароль
         </Label>
 
         <Input
@@ -51,6 +59,14 @@ export function AuthForm({
           className="bg-muted text-md md:text-sm"
           type="password"
           required
+          onInvalid={(e) => {
+            // @ts-ignore
+            e.target.setCustomValidity('Обязательное поле для заполнения!');
+          }}
+          onInput={(e) => {
+            // @ts-ignore
+            e.target.setCustomValidity('');
+          }}
         />
       </div>
 
