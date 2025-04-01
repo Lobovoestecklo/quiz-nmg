@@ -201,6 +201,8 @@ const PurePreviewMessage = ({
                           result={result}
                           isReadonly={isReadonly}
                         />
+                      ) : toolName === 'getDocument' ? (
+                        <div>{result.slice(0, 100)}...</div>
                       ) : toolName === 'requestSuggestions' ? (
                         <DocumentToolResult
                           type="request-suggestions"
