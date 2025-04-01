@@ -164,6 +164,8 @@ const PurePreviewMessage = ({
                         <Weather />
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
+                      ) : toolName === 'getDocument' ? (
+                        <div>Изучаю сценарий...</div>
                       ) : toolName === 'updateDocument' ? (
                         <DocumentToolCall
                           type="update"

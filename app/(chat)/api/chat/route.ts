@@ -25,6 +25,7 @@ import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
+import { getDocument } from '@/lib/ai/tools/get-document';
 
 export const maxDuration = 60;
 
@@ -105,6 +106,7 @@ export async function POST(request: Request) {
                   // 'getWeather',
                   'createDocument',
                   'updateDocument',
+                  'getDocument',
                   //'requestSuggestions',
                 ],
           experimental_transform: smoothStream({ chunking: 'word' }),
@@ -113,6 +115,7 @@ export async function POST(request: Request) {
             // getWeather,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
+            getDocument: getDocument({ session, dataStream }),
             // requestSuggestions: requestSuggestions({
             //   session,
             //   dataStream,
