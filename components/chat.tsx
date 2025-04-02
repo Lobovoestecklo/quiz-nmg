@@ -50,7 +50,7 @@ export function Chat({
       mutate('/api/history');
     },
     onError: () => {
-      toast.error('An error occured, please try again!');
+      toast.error('Произошла ошибка! Попробуйте ещё раз.');
     },
   });
 

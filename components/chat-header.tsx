@@ -51,19 +51,19 @@ function PureChatHeader({
               }}
             >
               <PlusIcon />
-              <span className="md:sr-only">New Chat</span>
+              <span className="md:sr-only">Новый чат</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>New Chat</TooltipContent>
+          <TooltipContent>Новый чат</TooltipContent>
         </Tooltip>
       )}
 
-      {!isReadonly && (
+      {/* {!isReadonly && (
         <ModelSelector
           selectedModelId={selectedModelId}
           className="order-1 md:order-2"
         />
-      )}
+      )} */}
 
       {!isReadonly && (
         <VisibilitySelector

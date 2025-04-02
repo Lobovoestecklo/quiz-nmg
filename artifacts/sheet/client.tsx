@@ -85,7 +85,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
         const cleanedCsv = unparse(nonEmptyRows);
 
         navigator.clipboard.writeText(cleanedCsv);
-        toast.success('Copied csv to clipboard!');
+        toast.success('CSV скопировано!');
       },
     },
   ],

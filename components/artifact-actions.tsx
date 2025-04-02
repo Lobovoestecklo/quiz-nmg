@@ -14,6 +14,7 @@ interface ArtifactActionsProps {
   mode: 'edit' | 'diff';
   metadata: any;
   setMetadata: Dispatch<SetStateAction<any>>;
+  isContentDirty: boolean;
 }
 
 function PureArtifactActions({
@@ -24,6 +25,7 @@ function PureArtifactActions({
   mode,
   metadata,
   setMetadata,
+  isContentDirty,
 }: ArtifactActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,13 +64,13 @@ function PureArtifactActions({
                 try {
                   await Promise.resolve(action.onClick(actionContext));
                 } catch (error) {
-                  toast.error('Failed to execute action');
+                  toast.error('Произошла ошибка! Попробуйте ещё раз.');
                 } finally {
                   setIsLoading(false);
                 }
               }}
               disabled={
-                isLoading || artifact.status === 'streaming'
+                isLoading || artifact.status === 'streaming' || isContentDirty
                   ? true
                   : action.isDisabled
                     ? action.isDisabled(actionContext)
@@ -94,7 +96,7 @@ export const ArtifactActions = memo(
       return false;
     if (prevProps.isCurrentVersion !== nextProps.isCurrentVersion) return false;
     if (prevProps.artifact.content !== nextProps.artifact.content) return false;
-
+    if (prevProps.isContentDirty !== nextProps.isContentDirty) return false;
     return true;
   },
 );

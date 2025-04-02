@@ -78,30 +78,35 @@ export async function POST(request: Request) {
     const messageId = generateUUID();
 
     // Save the message to the database
-    await saveMessages({
-      messages: [
-        {
-          id: messageId,
-          chatId,
-          role: 'assistant',
-          parts: messageParts,
-          attachments: [],
-          createdAt: new Date(),
-        },
-      ],
-    });
+    const savedMessage = (
+      await saveMessages({
+        messages: [
+          {
+            id: messageId,
+            chatId,
+            role: 'assistant',
+            parts: messageParts,
+            attachments: [],
+            createdAt: new Date(),
+          },
+        ],
+      })
+    )[0];
 
     return Response.json(
       {
         chatId,
         documentId,
         messageId,
+        savedMessage,
         isNewChat,
       },
       { status: 200 },
     );
   } catch (error) {
     console.error('Failed to create scenario:', error);
-    return new Response('Failed to create scenario', { status: 500 });
+    return new Response('Произошла ошибка при создании сценария', {
+      status: 500,
+    });
   }
 }

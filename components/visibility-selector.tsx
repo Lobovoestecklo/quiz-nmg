@@ -28,14 +28,14 @@ const visibilities: Array<{
 }> = [
   {
     id: 'private',
-    label: 'Private',
-    description: 'Only you can access this chat',
+    label: 'Закрытый чат',
+    description: 'Только вы можете получить доступ к этому чату',
     icon: <LockIcon />,
   },
   {
     id: 'public',
-    label: 'Public',
-    description: 'Anyone with the link can access this chat',
+    label: 'Общий чат',
+    description: 'Любой может получить доступ к этому чату по ссылке',
     icon: <GlobeIcon />,
   },
 ];

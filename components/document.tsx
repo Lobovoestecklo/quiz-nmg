@@ -11,9 +11,9 @@ const getActionText = (
 ) => {
   switch (type) {
     case 'create':
-      return tense === 'present' ? 'Creating' : 'Created';
+      return tense === 'present' ? 'Создаю' : 'Создан';
     case 'update':
-      return tense === 'present' ? 'Updating' : 'Updated';
+      return tense === 'present' ? 'Обновляю' : 'Обновлен';
     case 'request-suggestions':
       return tense === 'present'
         ? 'Adding suggestions'
@@ -43,7 +43,7 @@ function PureDocumentToolResult({
       onClick={(event) => {
         if (isReadonly) {
           toast.error(
-            'Viewing files in shared chats is currently not supported.',
+            'Просмотр файлов в общем в текущий момент не поддерживается.',
           );
           return;
         }
@@ -106,7 +106,7 @@ function PureDocumentToolCall({
       onClick={(event) => {
         if (isReadonly) {
           toast.error(
-            'Viewing files in shared chats is currently not supported.',
+            'Просмотр файлов в общем в текущий момент не поддерживается.',
           );
           return;
         }

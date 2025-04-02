@@ -13,6 +13,7 @@ import {
 import { Suggestion } from '@/lib/db/schema';
 import { toast } from 'sonner';
 import { getSuggestions } from '../actions';
+import { SaveIcon } from 'lucide-react';
 
 interface TextArtifactMetadata {
   suggestions: Array<Suggestion>;
@@ -66,6 +67,8 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     getDocumentContentById,
     isLoading,
     metadata,
+    isContentDirty,
+    setContent,
   }) => {
     if (isLoading) {
       return <DocumentSkeleton artifactKind="text" />;
@@ -88,6 +91,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
             currentVersionIndex={currentVersionIndex}
             status={status}
             onSaveContent={onSaveContent}
+            setContent={setContent}
           />
 
           {metadata &&
@@ -116,7 +120,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <UndoIcon size={18} />,
-      description: 'View Previous version',
+      description: 'Предыдущая версия',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('prev');
       },
@@ -130,7 +134,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <RedoIcon size={18} />,
-      description: 'View Next version',
+      description: 'Следующая версия',
       onClick: ({ handleVersionChange }) => {
         handleVersionChange('next');
       },
@@ -144,17 +148,17 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     },
     {
       icon: <CopyIcon size={18} />,
-      description: 'Copy to clipboard',
+      description: 'Копировать',
       onClick: ({ content }) => {
         navigator.clipboard.writeText(content);
-        toast.success('Copied to clipboard!');
+        toast.success('Скопировано!');
       },
     },
   ],
   toolbar: [
     {
       icon: <PenIcon />,
-      description: 'Add final polish',
+      description: 'Финальная проверка и маленькие исправления',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
@@ -162,7 +166,7 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
             'Please add final polish and check for grammar, add section titles for better structure, and ensure everything reads smoothly.',
         });
       },
-    },
+    } /* ,
     {
       icon: <MessageIcon />,
       description: 'Request suggestions',
@@ -172,6 +176,15 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
           content:
             'Please add suggestions you have that could improve the writing.',
         });
+      },
+    }, */,
+  ],
+  secondaryToolbar: [
+    {
+      icon: <SaveIcon size={18} />,
+      description: 'Сохранить',
+      onClick: ({ content, onSaveContent }) => {
+        onSaveContent(content, false);
       },
     },
   ],

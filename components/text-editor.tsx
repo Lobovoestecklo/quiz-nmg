@@ -30,6 +30,7 @@ type EditorProps = {
   isCurrentVersion: boolean;
   currentVersionIndex: number;
   suggestions: Array<Suggestion>;
+  setContent?: (updatedContent: string) => void;
 };
 
 function PureEditor({
@@ -37,12 +38,14 @@ function PureEditor({
   onSaveContent,
   suggestions,
   status,
+  setContent,
 }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
+      setContent?.(content);
       const state = EditorState.create({
         doc: buildDocumentFromContent(content),
         plugins: [
@@ -84,11 +87,12 @@ function PureEditor({
             transaction,
             editorRef,
             onSaveContent,
+            setContent,
           });
         },
       });
     }
-  }, [onSaveContent]);
+  }, [onSaveContent, setContent]);
 
   useEffect(() => {
     if (editorRef.current && content) {
@@ -111,6 +115,7 @@ function PureEditor({
       }
 
       if (currentContent !== content) {
+        setContent?.(content);
         const newDocument = buildDocumentFromContent(content);
 
         const transaction = editorRef.current.state.tr.replaceWith(
@@ -123,7 +128,7 @@ function PureEditor({
         editorRef.current.dispatch(transaction);
       }
     }
-  }, [content, status]);
+  }, [content, status, setContent]);
 
   useEffect(() => {
     if (editorRef.current?.state.doc && content) {
@@ -157,7 +162,8 @@ function areEqual(prevProps: EditorProps, nextProps: EditorProps) {
     prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
     !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
     prevProps.content === nextProps.content &&
-    prevProps.onSaveContent === nextProps.onSaveContent
+    prevProps.onSaveContent === nextProps.onSaveContent &&
+    prevProps.setContent === nextProps.setContent
   );
 }
 

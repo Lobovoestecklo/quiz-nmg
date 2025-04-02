@@ -49,18 +49,18 @@ export function PureMessageActions({
                   .trim();
 
                 if (!textFromParts) {
-                  toast.error("There's no text to copy!");
+                  toast.error('Упс! А копировать нечего! ¯\\_(ツ)_/¯');
                   return;
                 }
 
                 await copyToClipboard(textFromParts);
-                toast.success('Copied to clipboard!');
+                toast.success('Скопировано!');
               }}
             >
               <CopyIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Copy</TooltipContent>
+          <TooltipContent>Копировать</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -81,7 +81,7 @@ export function PureMessageActions({
                 });
 
                 toast.promise(upvote, {
-                  loading: 'Upvoting Response...',
+                  loading: 'Отмечаю, как полезное...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -104,16 +104,16 @@ export function PureMessageActions({
                       { revalidate: false },
                     );
 
-                    return 'Upvoted Response!';
+                    return 'Отмечено как полезное!';
                   },
-                  error: 'Failed to upvote response.',
+                  error: 'Не удалось отметить как полезное!',
                 });
               }}
             >
               <ThumbUpIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Upvote Response</TooltipContent>
+          <TooltipContent>Отметить как полезное</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -134,7 +134,7 @@ export function PureMessageActions({
                 });
 
                 toast.promise(downvote, {
-                  loading: 'Downvoting Response...',
+                  loading: 'Отмечаю, как не полезное...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -157,16 +157,16 @@ export function PureMessageActions({
                       { revalidate: false },
                     );
 
-                    return 'Downvoted Response!';
+                    return 'Отмечено как не полезное!';
                   },
-                  error: 'Failed to downvote response.',
+                  error: 'Не удалось отметить как не полезное!',
                 });
               }}
             >
               <ThumbDownIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Downvote Response</TooltipContent>
+          <TooltipContent>Отметить как не полезное</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>
