@@ -1,3 +1,7 @@
+'use client'; // Ensure this runs client-side
+
+import { useEffect } from 'react';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
@@ -47,11 +51,16 @@ const THEME_COLOR_SCRIPT = `\
   updateThemeColor();
 })();`;
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    // Ensure path matches where CopyPlugin puts the file (relative to public dir)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  }, []);
+
   return (
     <html
       lang="en"
