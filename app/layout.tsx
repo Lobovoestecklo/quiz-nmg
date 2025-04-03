@@ -2,8 +2,8 @@
 // import * as pdfjsLib from 'pdfjs-dist';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Script from 'next/script';
+// import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { ClientLayoutWrapper } from '@/app/_components/client-layout-wrapper';
@@ -21,10 +21,24 @@ export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-const inter = Inter({
+// Remove Inter definition
+// const inter = Inter({
+//   subsets: ['latin'],
+//   display: 'swap',
+//   variable: '--font-inter',
+// });
+
+// Add Geist definitions
+const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-geist',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-geist-mono',
 });
 
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
@@ -53,13 +67,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn(inter.variable)}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      // className={cn(inter.variable)}
+      className={`${geist.variable} ${geistMono.variable}`}
+    >
       <head>
-        <Script id="theme-color-script" strategy="beforeInteractive">
-          {THEME_COLOR_SCRIPT}
-        </Script>
+        <script
+          id="theme-color-script"
+          dangerouslySetInnerHTML={{
+            __html: THEME_COLOR_SCRIPT,
+          }}
+        />
       </head>
-      <body className={cn('font-sans antialiased')}>
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
