@@ -1,7 +1,6 @@
 // app/(chat)/api/scenario/route.ts
 import { auth } from '@/app/(auth)/auth';
-import { getChatById, saveChat, saveMessages } from '@/lib/db/queries';
-import { saveDocument } from '@/lib/db/queries';
+import { getChatById, saveChat, saveMessages , saveDocument } from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
 export async function POST(request: Request) {

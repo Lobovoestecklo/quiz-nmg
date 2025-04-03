@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
         patterns: [
           {
             from: path.join(
-              path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.js')
+              path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs')
             ),
             to: path.join(path.resolve(__dirname, 'public')),
           },

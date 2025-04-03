@@ -1,11 +1,13 @@
-'use client'; // Ensure this runs client-side
-
-import { useEffect } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
+// import { useEffect } from 'react';
+// import * as pdfjsLib from 'pdfjs-dist';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter } from 'next/font/google';
+import Script from 'next/script';
+
 import { ThemeProvider } from '@/components/theme-provider';
+import { ClientLayoutWrapper } from '@/app/_components/client-layout-wrapper';
+import { cn } from '@/lib/utils';
 
 import './globals.css';
 
@@ -19,16 +21,10 @@ export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-const geist = Geist({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-geist',
-});
-
-const geistMono = Geist_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-geist-mono',
+  variable: '--font-inter',
 });
 
 const LIGHT_THEME_COLOR = 'hsl(0 0% 100%)';
@@ -56,37 +52,22 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  useEffect(() => {
-    // Ensure path matches where CopyPlugin puts the file (relative to public dir)
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-  }, []);
-
   return (
-    <html
-      lang="en"
-      // `next-themes` injects an extra classname to the body element to avoid
-      // visual flicker before hydration. Hence the `suppressHydrationWarning`
-      // prop is necessary to avoid the React hydration mismatch warning.
-      // https://github.com/pacocoursey/next-themes?tab=readme-ov-file#with-app
-      suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable}`}
-    >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: THEME_COLOR_SCRIPT,
-          }}
-        />
-      </head>
-      <body className="antialiased">
+    <html lang="en" suppressHydrationWarning className={cn(inter.variable)}>
+      <Script id="theme-color-script" strategy="beforeInteractive">
+        {THEME_COLOR_SCRIPT}
+      </Script>
+      <body className={cn('font-sans antialiased')}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <Toaster position="top-center" />
-          {children}
+          <ClientLayoutWrapper>
+            {children}
+            <Toaster position="top-center" />
+          </ClientLayoutWrapper>
         </ThemeProvider>
       </body>
     </html>
