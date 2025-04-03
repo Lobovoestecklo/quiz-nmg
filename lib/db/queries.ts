@@ -192,7 +192,7 @@ export async function saveDocument({
       content,
       userId,
       createdAt: new Date(),
-    });
+    }).returning();
   } catch (error) {
     console.error('Failed to save document in database');
     throw error;

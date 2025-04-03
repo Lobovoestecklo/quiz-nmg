@@ -54,9 +54,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={cn(inter.variable)}>
-      <Script id="theme-color-script" strategy="beforeInteractive">
-        {THEME_COLOR_SCRIPT}
-      </Script>
+      <head>
+        <Script id="theme-color-script" strategy="beforeInteractive">
+          {THEME_COLOR_SCRIPT}
+        </Script>
+      </head>
       <body className={cn('font-sans antialiased')}>
         <ThemeProvider
           attribute="class"

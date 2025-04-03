@@ -5,6 +5,8 @@ import {
   getDocumentsById,
   saveDocument,
   saveMessages,
+  getChatById,
+  saveChat,
 } from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
@@ -104,28 +106,54 @@ export async function POST(request: Request) {
   } = await request.json();
 
   if (session.user?.id) {
-    const document = await saveDocument({
-      id,
-      content,
-      title,
-      kind,
-      userId: session.user.id,
-    });
+    let document: any;
+    try {
+      const documentResultArray = await saveDocument({
+        id,
+        content,
+        title,
+        kind,
+        userId: session.user.id,
+      });
 
-    // If this is a manual update and we have a chatId, create an assistant message
+      if (!Array.isArray(documentResultArray) || documentResultArray.length !== 1 || typeof documentResultArray[0] !== 'object') {
+         console.error('saveDocument did not return a valid single document array. Result:', documentResultArray);
+         throw new Error('Failed to save document properly.');
+      }
+
+      document = documentResultArray[0];
+
+    } catch (error) {
+        console.error('Error during saveDocument:', error);
+        return new Response(JSON.stringify({ error: 'Failed to save document to database.' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     if (is_manual === '1' && chatId) {
       try {
-        // Create message parts with the document update message
+        try {
+          const existingChat = await getChatById({ id: chatId });
+          if (!existingChat) {
+            await saveChat({
+              id: chatId,
+              userId: session.user.id,
+              title: document.title || 'Chat from PDF',
+            });
+          }
+        } catch (chatError) {
+           console.error(`Error checking/creating chat ${chatId}:`, chatError);
+           throw new Error(`Failed to ensure chat exists: ${(chatError as Error).message}`);
+        }
+
         const messageParts = createDocumentUpdateMessage(
-          id,
-          title,
+          document.id,
+          document.title,
           description,
         );
-
-        // Generate a unique ID for the message
         const messageId = generateUUID();
 
-        // Save the message to the database
         await saveMessages({
           messages: [
             {
@@ -148,9 +176,14 @@ export async function POST(request: Request) {
           { status: 200 },
         );
       } catch (error) {
-        console.error('Failed to create assistant message:', error);
-        // Still return the document even if message creation fails
-        return Response.json(document, { status: 200 });
+        console.error('Failed to create assistant message after saving document:', error);
+        return new Response(
+            JSON.stringify({ error: 'Document saved, but failed to create chat message.', documentId: document?.id ?? 'unknown' }),
+            {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            }
+        );
       }
     }
 

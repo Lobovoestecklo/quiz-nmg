@@ -16,7 +16,9 @@ import {
 } from 'react';
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
-import { cn } from '@/lib/utils';
+import { cn, generateUUID } from '@/lib/utils';
+import { PDF_MIME_TYPE, PDF_EXTENSION } from '@/lib/constants';
+import { extractTextFromPdf } from '@/lib/utils/pdf-parser';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
@@ -190,6 +192,84 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
+  const handlePdfFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || (file.type !== PDF_MIME_TYPE && !file.name.toLowerCase().endsWith(PDF_EXTENSION))) {
+        toast.error('Пожалуйста, выберите PDF файл.');
+        if (event.target) event.target.value = '';
+        return;
+    }
+    if (event.target) event.target.value = '';
+
+    const loadingToastId = toast.loading(`Извлечение текста из ${file.name}...`);
+
+    let extractedText: string | null = null;
+    try {
+       extractedText = await extractTextFromPdf(file);
+    } catch (error) {
+        console.error("PDF Parsing error:", error);
+        toast.error(`Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`, { id: loadingToastId });
+        return;
+    }
+
+    if (extractedText === null || extractedText.trim() === '') {
+         toast.error('Не удалось извлечь текст или PDF пустой.', { id: loadingToastId });
+         return;
+    }
+
+    toast.loading('Сохранение документа... ', { id: loadingToastId });
+    const documentId = generateUUID();
+    const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
+    const requestBody = {
+        content: extractedText,
+        title: file.name || 'Загруженный PDF',
+        kind: 'text',
+    };
+
+     try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+           let errorData = {};
+           try {
+                errorData = await response.json();
+           } catch (jsonError) {
+                console.error("Failed to parse API error response as JSON", jsonError);
+                errorData = { error: `Request failed with status ${response.status}` };
+           }
+           throw new Error((errorData as any)?.error || `Failed to create document (${response.status})`);
+        }
+
+        const result = await response.json();
+
+        if (result.messageId && result.messageParts) {
+            const assistantMessage: UIMessage = {
+               id: result.messageId,
+               role: 'assistant',
+               parts: result.messageParts,
+               content: '',
+               createdAt: new Date(),
+            };
+            setMessages(currentMessages => [...currentMessages, assistantMessage]);
+            toast.success('Документ успешно создан и добавлен в чат.', { id: loadingToastId });
+        } else {
+           console.warn("API did not return expected message details (messageId, messageParts). Result:", result);
+           toast.success('Документ успешно создан (но не добавлен в чат).', { id: loadingToastId });
+        }
+
+     } catch (error: any) {
+         console.error("Document Creation/API Fetch Error:", error);
+         toast.error(`Ошибка сохранения документа: ${error.message}`, { id: loadingToastId });
+     }
+
+  }, [chatId, setMessages]);
+
   return (
     <div className="relative w-full flex flex-col gap-4">
       {messages.length === 0 &&
@@ -314,17 +394,17 @@ function PureAttachmentsButton({
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers['status'];
   isWithScenarioInsert?: boolean;
-  chatId?: string;
+  chatId: string;
   title?: string;
   content?: string;
   setMessages: UseChatHelpers['setMessages'];
   messages: Array<UIMessage>;
 }) {
   const [open, setOpen] = useState(false);
-
   const router = useRouter();
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  const handleScenarioInsert = useCallback(async () => {
+  const handleInsertScenario = useCallback(async () => {
     if (!isWithScenarioInsert || !chatId || !title || !content) return;
     try {
       const response = await fetch('/api/scenario', {
@@ -363,14 +443,101 @@ function PureAttachmentsButton({
     }
   }, [isWithScenarioInsert, chatId, title, content]);
 
-  if (isWithScenarioInsert) {
-    return (
+  const handlePdfFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || (file.type !== PDF_MIME_TYPE && !file.name.toLowerCase().endsWith(PDF_EXTENSION))) {
+        toast.error('Пожалуйста, выберите PDF файл.');
+        if (event.target) event.target.value = '';
+        return;
+    }
+    if (event.target) event.target.value = '';
+
+    const loadingToastId = toast.loading(`Извлечение текста из ${file.name}...`);
+
+    let extractedText: string | null = null;
+    try {
+       extractedText = await extractTextFromPdf(file);
+    } catch (error) {
+        console.error("PDF Parsing error:", error);
+        toast.error(`Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`, { id: loadingToastId });
+        return;
+    }
+
+    if (extractedText === null || extractedText.trim() === '') {
+         toast.error('Не удалось извлечь текст или PDF пустой.', { id: loadingToastId });
+         return;
+    }
+
+    toast.loading('Сохранение документа... ', { id: loadingToastId });
+    const documentId = generateUUID();
+    const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
+    const requestBody = {
+        content: extractedText,
+        title: file.name || 'Загруженный PDF',
+        kind: 'text',
+    };
+
+     try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+           let errorData = {};
+           try {
+                errorData = await response.json();
+           } catch (jsonError) {
+                console.error("Failed to parse API error response as JSON", jsonError);
+                errorData = { error: `Request failed with status ${response.status}` };
+           }
+           throw new Error((errorData as any)?.error || `Failed to create document (${response.status})`);
+        }
+
+        const result = await response.json();
+
+        if (result.messageId && result.messageParts) {
+            const assistantMessage: UIMessage = {
+               id: result.messageId,
+               role: 'assistant',
+               parts: result.messageParts,
+               content: '',
+               createdAt: new Date(),
+            };
+            setMessages(currentMessages => [...currentMessages, assistantMessage]);
+            toast.success('Документ успешно создан и добавлен в чат.', { id: loadingToastId });
+        } else {
+           console.warn("API did not return expected message details (messageId, messageParts). Result:", result);
+           toast.success('Документ успешно создан (но не добавлен в чат).', { id: loadingToastId });
+        }
+
+     } catch (error: any) {
+         console.error("Document Creation/API Fetch Error:", error);
+         toast.error(`Ошибка сохранения документа: ${error.message}`, { id: loadingToastId });
+     }
+
+  }, [chatId, setMessages]);
+
+  return (
+    <>
+      <input
+        type="file"
+        ref={pdfInputRef}
+        className="hidden"
+        accept={PDF_MIME_TYPE + ',' + PDF_EXTENSION}
+        onChange={handlePdfFileChange}
+        multiple={false}
+        tabIndex={-1}
+      />
+
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger
           asChild
           className={cn(
             'w-fit data-[state=open]:bg-accent data-[state=open]:text-accent-foreground',
-            // className,
           )}
         >
           <Button
@@ -382,41 +549,10 @@ function PureAttachmentsButton({
             <PaperclipIcon size={14} />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[300px]">
+        <DropdownMenuContent sideOffset={10} align="start" className="w-[240px]">
           <DropdownMenuItem
-            // data-testid={`model-selector-item-${id}`}
-            // key={id}
             onSelect={() => {
               setOpen(false);
-
-              startTransition(() => {
-                handleScenarioInsert();
-              });
-            }}
-            asChild
-          >
-            <button
-              type="button"
-              className="gap-4 group/item flex flex-row justify-between items-center w-full"
-            >
-              <div className="flex flex-col gap-1 items-start">
-                <div>Вставить свой сценарий</div>
-                <div className="text-xs text-muted-foreground">
-                  В виде текста или PDF-файл
-                </div>
-              </div>
-
-              {/* <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
-                </div> */}
-            </button>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            // data-testid={`model-selector-item-${id}`}
-            // key={id}
-            onSelect={() => {
-              setOpen(false);
-
               startTransition(() => {
                 fileInputRef.current?.click();
               });
@@ -425,37 +561,55 @@ function PureAttachmentsButton({
           >
             <button
               type="button"
-              className="gap-4 group/item flex flex-row justify-between items-center w-full"
+              className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-accent"
+              disabled={status !== 'ready'}
             >
-              <div className="flex flex-col gap-1 items-start">
-                <div>(Beta) Вставить файл для контекста</div>
-                <div className="text-xs text-muted-foreground">
-                  Изображение или PDF-файл
-                </div>
-              </div>
-
-              {/* <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
-                  <CheckCircleFillIcon />
-                </div> */}
+              <div>Загрузить изображение</div>
+              <div className="text-xs text-muted-foreground"></div>
             </button>
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              setOpen(false);
+              startTransition(() => {
+                  pdfInputRef.current?.click();
+              });
+            }}
+            asChild
+          >
+            <button
+              type="button"
+              className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-accent"
+              disabled={status !== 'ready'}
+            >
+              <div>Вставить pdf файл</div>
+              <div className="text-xs text-muted-foreground">Текст будет извлечен</div>
+            </button>
+          </DropdownMenuItem>
+          {isWithScenarioInsert && chatId && title && content && (
+            <DropdownMenuItem
+              onSelect={() => {
+                setOpen(false);
+                startTransition(handleInsertScenario);
+              }}
+              asChild
+            >
+              <button
+                type="button"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+              >
+                <div className="flex flex-col gap-1 items-start">
+                  <div>Вставить свой сценарий</div>
+                  <div className="text-xs text-muted-foreground">
+                    В виде текста или PDF-файл
+                  </div>
+                </div>
+              </button>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
-    );
-  }
-  return (
-    <Button
-      data-testid="attachments-button"
-      className="rounded-md rounded-bl-lg p-[7px] h-fit dark:border-zinc-700 hover:dark:bg-zinc-900 hover:bg-zinc-200"
-      onClick={(event) => {
-        event.preventDefault();
-        fileInputRef.current?.click();
-      }}
-      disabled={status !== 'ready'}
-      variant="ghost"
-    >
-      <PaperclipIcon size={14} />
-    </Button>
+    </>
   );
 }
 
