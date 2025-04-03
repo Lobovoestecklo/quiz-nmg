@@ -5,3 +5,6 @@ export const isTestEnvironment = Boolean(
     process.env.PLAYWRIGHT ||
     process.env.CI_PLAYWRIGHT,
 );
+
+export const PDF_MIME_TYPE = 'application/pdf';
+export const PDF_EXTENSION = '.pdf';
