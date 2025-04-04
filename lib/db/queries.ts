@@ -104,6 +104,35 @@ export async function getChatById({ id }: { id: string }) {
   }
 }
 
+export async function ensureChatExists({
+  chatId,
+  userId,
+  title,
+}: {
+  chatId: string;
+  userId: string;
+  title: string;
+}) {
+  try {
+    const existingChat = await getChatById({ id: chatId });
+    if (!existingChat) {
+      console.log(`Chat ${chatId} not found, creating new chat with title "${title}" for user ${userId}`);
+      await saveChat({
+        id: chatId,
+        userId: userId,
+        title: title,
+      });
+      console.log(`Chat ${chatId} created successfully.`);
+    } else {
+      console.log(`Chat ${chatId} already exists.`);
+    }
+  } catch (error) {
+    console.error(`Error ensuring chat ${chatId} exists:`, error);
+    // Re-throw the error to be caught by the calling function
+    throw new Error(`Failed to ensure chat exists: ${(error as Error).message}`);
+  }
+}
+
 export async function saveMessages({
   messages,
 }: {

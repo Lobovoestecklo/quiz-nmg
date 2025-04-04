@@ -2,6 +2,7 @@ import { auth } from '@/app/(auth)/auth';
 import { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
+  ensureChatExists,
   getDocumentsById,
   saveDocument,
   saveMessages,
@@ -133,19 +134,11 @@ export async function POST(request: Request) {
 
     if (is_manual === '1' && chatId) {
       try {
-        try {
-          const existingChat = await getChatById({ id: chatId });
-          if (!existingChat) {
-            await saveChat({
-              id: chatId,
-              userId: session.user.id,
-              title: document.title || 'Chat from PDF',
-            });
-          }
-        } catch (chatError) {
-           console.error(`Error checking/creating chat ${chatId}:`, chatError);
-           throw new Error(`Failed to ensure chat exists: ${(chatError as Error).message}`);
-        }
+        await ensureChatExists({
+            chatId: chatId,
+            userId: session.user.id,
+            title: document.title || 'Chat from PDF'
+        });
 
         const messageParts = createDocumentUpdateMessage(
           document.id,
