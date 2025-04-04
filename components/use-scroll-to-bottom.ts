@@ -13,31 +13,26 @@ export function useScrollToBottom<T extends HTMLElement>(): [
 
     if (container && end) {
       const observer = new MutationObserver((mutationsList) => {
+        // Check if any mutation happened that might require scrolling
         for (const mutation of mutationsList) {
-          // Only scroll if new nodes were added directly to the container
-          if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            // Check if the added node is a direct child of the container
-            let addedToContainer = false;
-            mutation.addedNodes.forEach(node => {
-              if (node.parentNode === container) {
-                addedToContainer = true;
-              }
-            });
-
-            if (addedToContainer) {
-              end.scrollIntoView({ behavior: 'instant', block: 'end' });
-              // Break after the first relevant mutation to avoid redundant scrolls
-              break;
-            }
+          if (
+            mutation.type === 'childList' ||
+            mutation.type === 'characterData'
+          ) {
+            // Scroll to bottom on relevant changes within the container or its subtree
+            end.scrollIntoView({ behavior: 'instant', block: 'end' });
+            // Break after the first relevant mutation to avoid redundant scrolls
+            break;
           }
         }
       });
 
+      // Observe changes in child nodes, subtree, and character data
       observer.observe(container, {
-        childList: true, // We only care about direct children being added/removed
-        // subtree: false, // Remove subtree observation
-        // attributes: false, // Remove attribute observation
-        // characterData: false, // Remove characterData observation
+        childList: true,
+        subtree: true, // Observe changes within the entire subtree
+        characterData: true, // Observe changes to text nodes
+        // attributes: false, // Still likely don't need attribute changes
       });
 
       return () => observer.disconnect();
