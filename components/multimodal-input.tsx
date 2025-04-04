@@ -213,7 +213,7 @@ function PureMultimodalInput({
     }
 
     if (extractedText === null || extractedText.trim() === '') {
-         toast.error('Не удалось извлечь текст или PDF пустой.', { id: loadingToastId });
+         toast.error('Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.', { id: loadingToastId });
          return;
     }
 
@@ -464,7 +464,7 @@ function PureAttachmentsButton({
     }
 
     if (extractedText === null || extractedText.trim() === '') {
-         toast.error('Не удалось извлечь текст или PDF пустой.', { id: loadingToastId });
+         toast.error('Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.', { id: loadingToastId });
          return;
     }
 

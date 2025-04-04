@@ -250,9 +250,27 @@ Follow these guidelines for a smooth implementation:
          7.  Assert that a new assistant message appears in the chat list, indicating the document creation/update (check for text like "Сценарий обновлен" or similar, based on `createDocumentUpdateMessage`).
          8.  (Optional) If the UI allows viewing documents, navigate to verify the created document's content matches the sample PDF's text.
    *   **Manual Testing:**
-      *   Thoroughly test manually with various valid PDFs (different sizes, text layouts).
-      *   Test with invalid or corrupted PDFs to ensure graceful error handling (e.g., clear error messages via toast).
-      *   Test network error scenarios (e.g., using browser dev tools to simulate offline or failed API calls).
+      *   **Happy Path (Standard PDFs):**
+          *   Upload a small (< 1MB), single-page PDF with selectable text. Verify successful parsing, document creation, and correct chat message update. **(SUCCESS)**
+          *   Upload a medium-sized (~1-5MB) multi-page PDF with selectable text (like the EEAAO script). Verify success. **(SUCCESS)**
+          *   Upload a larger (> 10MB) multi-page PDF with selectable text. Monitor browser performance slightly, verify success.  **(SUCCESS)**
+          *   Upload a PDF containing text in different languages (e.g., English and Cyrillic, English and Chinese). Verify text is extracted and saved correctly (even if formatting is lost). **(SUCCESS)**
+      *   **Text Extraction Edge Cases:**
+          *   Upload a PDF that contains *only* images (no selectable text). Verify the 'Failed to extract text...' toast appears and no document is created. **(SUCCESS)**
+          *   Upload a PDF where text is selectable but extraction might fail (like the Columbo script example). Verify the 'Failed to extract text...' toast appears and no document is created. **(SUCCESS)**
+          *   Upload a PDF containing null characters (like the initial EEAAO test). Verify it now succeeds due to sanitization. **(SUCCESS)**
+          *   Upload a PDF with complex layouts (multiple columns, tables, headers/footers). Verify text is extracted (accepting formatting loss) and saved. **(SUCCESS)**
+      *   **File Handling:**
+          *   Attempt to upload a non-PDF file (e.g., `.txt`, `.jpg`) via the 'Вставить pdf файл' option. Verify the 'Пожалуйста, выберите PDF файл' toast appears and no processing occurs. **(SUCCESS)**
+          *   Cancel the file selection dialog after clicking the menu item. Verify nothing happens. **(SUCCESS)**
+      *   **Error Handling:**
+          *   Test with invalid or corrupted PDF files. Verify a relevant error toast is shown during the 'Извлечение текста' phase. **(SUCCESS)**
+          *   Simulate a network error during the 'Сохранение документа' phase (e.g., using browser dev tools to block the `/api/document` request). Verify a relevant error toast is shown. **(SUCCESS)**
+          *   Simulate an API error response (e.g., 500 status) from `/api/document`. Verify a relevant error toast is shown. **(SUCCESS)**
+      *   **UI/UX:**
+          *   Verify the loading toasts appear and update correctly through the process (extracting -> saving -> success/error). **(SUCCESS)**
+          *   Verify the PDF file input is reset after selection (allowing the same file to be uploaded again). **(SUCCESS)**
+          *   Verify the dropdown menu closes after selecting the PDF option. **(SUCCESS)**
 
 **4. Debugging:**
    *   Utilize `console.log` statements liberally during development to trace data flow (e.g., log the selected file, extracted text, API request body, API response).
