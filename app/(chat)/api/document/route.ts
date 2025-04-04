@@ -126,24 +126,27 @@ export async function POST(request: Request) {
         const messageId = generateUUID();
 
         // Save the message to the database
-        await saveMessages({
-          messages: [
-            {
-              id: messageId,
-              chatId,
-              role: 'assistant',
-              parts: messageParts,
-              attachments: [],
-              createdAt: new Date(),
-            },
-          ],
-        });
+        const savedMessage = (
+          await saveMessages({
+            messages: [
+              {
+                id: messageId,
+                chatId,
+                role: 'assistant',
+                parts: messageParts,
+                attachments: [],
+                createdAt: new Date(),
+              },
+            ],
+          })
+        )[0];
 
         return Response.json(
           {
             ...document,
             messageId,
             messageParts,
+            savedMessage,
           },
           { status: 200 },
         );
