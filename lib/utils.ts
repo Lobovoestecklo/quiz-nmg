@@ -163,3 +163,41 @@ export function getTrailingMessageId({
 
   return trailingMessage.id;
 }
+
+export const createDocumentUpdateMessage = (
+  documentId: string,
+  title: string,
+  description: string,
+) => {
+  return [
+    {
+      type: 'text',
+      text: `Обновляю сценарий:`,
+    },
+    {
+      type: 'tool-invocation',
+      toolInvocation: {
+        state: 'result',
+        step: 0,
+        args: {
+          id: documentId,
+          description: description,
+        },
+        toolCallId: `toolu_${generateUUID()}`,
+        toolName: 'updateDocument',
+        result: {
+          id: documentId,
+          title: title,
+          kind: 'text',
+          content:
+            'Документ успешно обновлен. Нельзя сразу вызывать updateDocument или createDocument в тот же запрос. Пожалуйста, ОБЯЗАТЕЛЬНО дождитесь отзыва пользователя перед дальнейшими изменениями.',
+          justUpdated: true,
+        },
+      },
+    },
+    {
+      type: 'text',
+      text: `Сценарий обновлен.`,
+    },
+  ];
+};
