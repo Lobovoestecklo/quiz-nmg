@@ -426,8 +426,6 @@ function PureAttachmentsButton({
       const result: any = await response.json();
 
       const { chatId: scenarioChatId, isNewChat, savedMessage } = result;
-      console.log('scenarioChatId', scenarioChatId);
-      console.log('isNewChat', isNewChat);
       if (isNewChat) {
         toast.success('Сценарий успешно создан');
         router.push(`/chat/${scenarioChatId}`);

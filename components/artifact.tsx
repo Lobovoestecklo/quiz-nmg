@@ -144,7 +144,7 @@ function PureArtifact({
           }
 
           if (currentDocument.content !== updatedContent) {
-            await fetch(
+            const response = await fetch(
               `/api/document?id=${artifact.documentId}&is_manual=1&chatId=${chatId}`,
               {
                 method: 'POST',
@@ -155,6 +155,12 @@ function PureArtifact({
                 }),
               },
             );
+
+            const result = await response.json();
+
+            if (result.savedMessage) {
+              setMessages([...messages, result.savedMessage]);
+            }
 
             setIsContentDirty(false);
 
@@ -171,7 +177,7 @@ function PureArtifact({
         { revalidate: false },
       );
     },
-    [artifact, mutate],
+    [artifact, mutate, setMessages],
   );
 
   const debouncedHandleContentChange = useDebounceCallback(
