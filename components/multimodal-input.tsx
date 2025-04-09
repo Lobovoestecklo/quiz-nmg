@@ -449,31 +449,6 @@ function PureAttachmentsButton({
             id: loadingToastId,
           });
         }
-
-        // if (result.messageId && result.messageParts) {
-        //   const assistantMessage: UIMessage = {
-        //     id: result.messageId,
-        //     role: 'assistant',
-        //     parts: result.messageParts,
-        //     content: '',
-        //     createdAt: new Date(),
-        //   };
-        //   setMessages((currentMessages) => [
-        //     ...currentMessages,
-        //     assistantMessage,
-        //   ]);
-        //   toast.success('Документ успешно создан и добавлен в чат.', {
-        //     id: loadingToastId,
-        //   });
-        // } else {
-        //   console.warn(
-        //     'API did not return expected message details (messageId, messageParts). Result:',
-        //     result,
-        //   );
-        //   toast.success('Документ успешно создан (но не добавлен в чат).', {
-        //     id: loadingToastId,
-        //   });
-        // }
       } catch (error: any) {
         console.error('Document Creation/API Fetch Error:', error);
         toast.error(`Ошибка сохранения документа: ${error.message}`, {
