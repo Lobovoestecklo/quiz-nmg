@@ -205,9 +205,6 @@ function PureArtifact({
 
   const saveContent2 = useCallback(
     (updatedContent: string, debounce: boolean) => {
-      console.log('updating content');
-      console.log('updatedContent', updatedContent);
-      console.log('debounce', debounce);
       if (document && updatedContent !== document.content) {
         setIsContentDirty(true);
 
