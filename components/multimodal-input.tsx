@@ -192,41 +192,54 @@ function PureMultimodalInput({
     [setAttachments],
   );
 
-  const handlePdfFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || (file.type !== PDF_MIME_TYPE && !file.name.toLowerCase().endsWith(PDF_EXTENSION))) {
+  const handlePdfFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (
+        !file ||
+        (file.type !== PDF_MIME_TYPE &&
+          !file.name.toLowerCase().endsWith(PDF_EXTENSION))
+      ) {
         toast.error('Пожалуйста, выберите PDF файл.');
         if (event.target) event.target.value = '';
         return;
-    }
-    if (event.target) event.target.value = '';
+      }
+      if (event.target) event.target.value = '';
 
-    const loadingToastId = toast.loading(`Извлечение текста из ${file.name}...`);
+      const loadingToastId = toast.loading(
+        `Извлечение текста из ${file.name}...`,
+      );
 
-    let extractedText: string | null = null;
-    try {
-       extractedText = await extractTextFromPdf(file);
-    } catch (error) {
-        console.error("PDF Parsing error:", error);
-        toast.error(`Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`, { id: loadingToastId });
+      let extractedText: string | null = null;
+      try {
+        extractedText = await extractTextFromPdf(file);
+      } catch (error) {
+        console.error('PDF Parsing error:', error);
+        toast.error(
+          `Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
+          { id: loadingToastId },
+        );
         return;
-    }
+      }
 
-    if (extractedText === null || extractedText.trim() === '') {
-         toast.error('Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.', { id: loadingToastId });
-         return;
-    }
+      if (extractedText === null || extractedText.trim() === '') {
+        toast.error(
+          'Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.',
+          { id: loadingToastId },
+        );
+        return;
+      }
 
-    toast.loading('Сохранение документа... ', { id: loadingToastId });
-    const documentId = generateUUID();
-    const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
-    const requestBody = {
+      toast.loading('Сохранение документа... ', { id: loadingToastId });
+      const documentId = generateUUID();
+      const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
+      const requestBody = {
         content: extractedText,
         title: file.name || 'Загруженный PDF',
         kind: 'text',
-    };
+      };
 
-     try {
+      try {
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -236,39 +249,59 @@ function PureMultimodalInput({
         });
 
         if (!response.ok) {
-           let errorData = {};
-           try {
-                errorData = await response.json();
-           } catch (jsonError) {
-                console.error("Failed to parse API error response as JSON", jsonError);
-                errorData = { error: `Request failed with status ${response.status}` };
-           }
-           throw new Error((errorData as any)?.error || `Failed to create document (${response.status})`);
+          let errorData = {};
+          try {
+            errorData = await response.json();
+          } catch (jsonError) {
+            console.error(
+              'Failed to parse API error response as JSON',
+              jsonError,
+            );
+            errorData = {
+              error: `Request failed with status ${response.status}`,
+            };
+          }
+          throw new Error(
+            (errorData as any)?.error ||
+              `Failed to create document (${response.status})`,
+          );
         }
 
         const result = await response.json();
 
         if (result.messageId && result.messageParts) {
-            const assistantMessage: UIMessage = {
-               id: result.messageId,
-               role: 'assistant',
-               parts: result.messageParts,
-               content: '',
-               createdAt: new Date(),
-            };
-            setMessages(currentMessages => [...currentMessages, assistantMessage]);
-            toast.success('Документ успешно создан и добавлен в чат.', { id: loadingToastId });
+          const assistantMessage: UIMessage = {
+            id: result.messageId,
+            role: 'assistant',
+            parts: result.messageParts,
+            content: '',
+            createdAt: new Date(),
+          };
+          setMessages((currentMessages) => [
+            ...currentMessages,
+            assistantMessage,
+          ]);
+          toast.success('Документ успешно создан и добавлен в чат.', {
+            id: loadingToastId,
+          });
         } else {
-           console.warn("API did not return expected message details (messageId, messageParts). Result:", result);
-           toast.success('Документ успешно создан (но не добавлен в чат).', { id: loadingToastId });
+          console.warn(
+            'API did not return expected message details (messageId, messageParts). Result:',
+            result,
+          );
+          toast.success('Документ успешно создан (но не добавлен в чат).', {
+            id: loadingToastId,
+          });
         }
-
-     } catch (error: any) {
-         console.error("Document Creation/API Fetch Error:", error);
-         toast.error(`Ошибка сохранения документа: ${error.message}`, { id: loadingToastId });
-     }
-
-  }, [chatId, setMessages]);
+      } catch (error: any) {
+        console.error('Document Creation/API Fetch Error:', error);
+        toast.error(`Ошибка сохранения документа: ${error.message}`, {
+          id: loadingToastId,
+        });
+      }
+    },
+    [chatId, setMessages],
+  );
 
   return (
     <div className="relative w-full flex flex-col gap-4">
@@ -441,41 +474,54 @@ function PureAttachmentsButton({
     }
   }, [isWithScenarioInsert, chatId, title, content]);
 
-  const handlePdfFileChange = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || (file.type !== PDF_MIME_TYPE && !file.name.toLowerCase().endsWith(PDF_EXTENSION))) {
+  const handlePdfFileChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (
+        !file ||
+        (file.type !== PDF_MIME_TYPE &&
+          !file.name.toLowerCase().endsWith(PDF_EXTENSION))
+      ) {
         toast.error('Пожалуйста, выберите PDF файл.');
         if (event.target) event.target.value = '';
         return;
-    }
-    if (event.target) event.target.value = '';
+      }
+      if (event.target) event.target.value = '';
 
-    const loadingToastId = toast.loading(`Извлечение текста из ${file.name}...`);
+      const loadingToastId = toast.loading(
+        `Извлечение текста из ${file.name}...`,
+      );
 
-    let extractedText: string | null = null;
-    try {
-       extractedText = await extractTextFromPdf(file);
-    } catch (error) {
-        console.error("PDF Parsing error:", error);
-        toast.error(`Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`, { id: loadingToastId });
+      let extractedText: string | null = null;
+      try {
+        extractedText = await extractTextFromPdf(file);
+      } catch (error) {
+        console.error('PDF Parsing error:', error);
+        toast.error(
+          `Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
+          { id: loadingToastId },
+        );
         return;
-    }
+      }
 
-    if (extractedText === null || extractedText.trim() === '') {
-         toast.error('Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.', { id: loadingToastId });
-         return;
-    }
+      if (extractedText === null || extractedText.trim() === '') {
+        toast.error(
+          'Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.',
+          { id: loadingToastId },
+        );
+        return;
+      }
 
-    toast.loading('Сохранение документа... ', { id: loadingToastId });
-    const documentId = generateUUID();
-    const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
-    const requestBody = {
+      toast.loading('Сохранение документа... ', { id: loadingToastId });
+      const documentId = generateUUID();
+      const apiUrl = `/api/document?id=${documentId}&chatId=${chatId}&is_manual=1`;
+      const requestBody = {
         content: extractedText,
         title: file.name || 'Загруженный PDF',
         kind: 'text',
-    };
+      };
 
-     try {
+      try {
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -485,39 +531,59 @@ function PureAttachmentsButton({
         });
 
         if (!response.ok) {
-           let errorData = {};
-           try {
-                errorData = await response.json();
-           } catch (jsonError) {
-                console.error("Failed to parse API error response as JSON", jsonError);
-                errorData = { error: `Request failed with status ${response.status}` };
-           }
-           throw new Error((errorData as any)?.error || `Failed to create document (${response.status})`);
+          let errorData = {};
+          try {
+            errorData = await response.json();
+          } catch (jsonError) {
+            console.error(
+              'Failed to parse API error response as JSON',
+              jsonError,
+            );
+            errorData = {
+              error: `Request failed with status ${response.status}`,
+            };
+          }
+          throw new Error(
+            (errorData as any)?.error ||
+              `Failed to create document (${response.status})`,
+          );
         }
 
         const result = await response.json();
 
         if (result.messageId && result.messageParts) {
-            const assistantMessage: UIMessage = {
-               id: result.messageId,
-               role: 'assistant',
-               parts: result.messageParts,
-               content: '',
-               createdAt: new Date(),
-            };
-            setMessages(currentMessages => [...currentMessages, assistantMessage]);
-            toast.success('Документ успешно создан и добавлен в чат.', { id: loadingToastId });
+          const assistantMessage: UIMessage = {
+            id: result.messageId,
+            role: 'assistant',
+            parts: result.messageParts,
+            content: '',
+            createdAt: new Date(),
+          };
+          setMessages((currentMessages) => [
+            ...currentMessages,
+            assistantMessage,
+          ]);
+          toast.success('Документ успешно создан и добавлен в чат.', {
+            id: loadingToastId,
+          });
         } else {
-           console.warn("API did not return expected message details (messageId, messageParts). Result:", result);
-           toast.success('Документ успешно создан (но не добавлен в чат).', { id: loadingToastId });
+          console.warn(
+            'API did not return expected message details (messageId, messageParts). Result:',
+            result,
+          );
+          toast.success('Документ успешно создан (но не добавлен в чат).', {
+            id: loadingToastId,
+          });
         }
-
-     } catch (error: any) {
-         console.error("Document Creation/API Fetch Error:", error);
-         toast.error(`Ошибка сохранения документа: ${error.message}`, { id: loadingToastId });
-     }
-
-  }, [chatId, setMessages]);
+      } catch (error: any) {
+        console.error('Document Creation/API Fetch Error:', error);
+        toast.error(`Ошибка сохранения документа: ${error.message}`, {
+          id: loadingToastId,
+        });
+      }
+    },
+    [chatId, setMessages],
+  );
 
   return (
     <>
@@ -547,7 +613,11 @@ function PureAttachmentsButton({
             <PaperclipIcon size={14} />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent sideOffset={10} align="start" className="w-[240px]">
+        <DropdownMenuContent
+          sideOffset={10}
+          align="start"
+          className="w-[240px]"
+        >
           <DropdownMenuItem
             onSelect={() => {
               setOpen(false);
@@ -570,18 +640,22 @@ function PureAttachmentsButton({
             onSelect={() => {
               setOpen(false);
               startTransition(() => {
-                  pdfInputRef.current?.click();
+                pdfInputRef.current?.click();
               });
             }}
             asChild
           >
             <button
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between p-2 hover:bg-accent"
+              className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
               disabled={status !== 'ready'}
             >
-              <div>Вставить pdf файл</div>
-              <div className="text-xs text-muted-foreground">Текст будет извлечен</div>
+              <div className="flex flex-col gap-1 items-start">
+                <div>Вставить сценарий из pdf файла</div>
+                <div className="text-xs text-muted-foreground">
+                  Текст будет извлечен
+                </div>
+              </div>
             </button>
           </DropdownMenuItem>
           {isWithScenarioInsert && chatId && title && content && (
@@ -594,12 +668,13 @@ function PureAttachmentsButton({
             >
               <button
                 type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
+                disabled={status !== 'ready'}
               >
                 <div className="flex flex-col gap-1 items-start">
                   <div>Вставить свой сценарий</div>
                   <div className="text-xs text-muted-foreground">
-                    В виде текста или PDF-файл
+                    В виде текста
                   </div>
                 </div>
               </button>
