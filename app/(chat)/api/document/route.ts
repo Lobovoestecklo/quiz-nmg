@@ -2,12 +2,9 @@ import { auth } from '@/app/(auth)/auth';
 import { ArtifactKind } from '@/components/artifact';
 import {
   deleteDocumentsByIdAfterTimestamp,
-  ensureChatExists,
   getDocumentsById,
   saveDocument,
   saveMessages,
-  getChatById,
-  saveChat,
 } from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
@@ -107,76 +104,56 @@ export async function POST(request: Request) {
   } = await request.json();
 
   if (session.user?.id) {
-    let document: any;
-    try {
-      const documentResultArray = await saveDocument({
-        id,
-        content,
-        title,
-        kind,
-        userId: session.user.id,
-      });
+    const document = await saveDocument({
+      id,
+      content,
+      title,
+      kind,
+      userId: session.user.id,
+    });
 
-      if (!Array.isArray(documentResultArray) || documentResultArray.length !== 1 || typeof documentResultArray[0] !== 'object') {
-         console.error('saveDocument did not return a valid single document array. Result:', documentResultArray);
-         throw new Error('Failed to save document properly.');
-      }
-
-      document = documentResultArray[0];
-
-    } catch (error) {
-        console.error('Error during saveDocument:', error);
-        return new Response(JSON.stringify({ error: 'Failed to save document to database.' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
+    // If this is a manual update and we have a chatId, create an assistant message
     if (is_manual === '1' && chatId) {
       try {
-        await ensureChatExists({
-            chatId: chatId,
-            userId: session.user.id,
-            title: document.title || 'Chat from PDF'
-        });
-
+        // Create message parts with the document update message
         const messageParts = createDocumentUpdateMessage(
-          document.id,
-          document.title,
+          id,
+          title,
           description,
         );
+
+        // Generate a unique ID for the message
         const messageId = generateUUID();
 
-        await saveMessages({
-          messages: [
-            {
-              id: messageId,
-              chatId,
-              role: 'assistant',
-              parts: messageParts,
-              attachments: [],
-              createdAt: new Date(),
-            },
-          ],
-        });
+        // Save the message to the database
+        const savedMessage = (
+          await saveMessages({
+            messages: [
+              {
+                id: messageId,
+                chatId,
+                role: 'assistant',
+                parts: messageParts,
+                attachments: [],
+                createdAt: new Date(),
+              },
+            ],
+          })
+        )[0];
 
         return Response.json(
           {
             ...document,
             messageId,
             messageParts,
+            savedMessage,
           },
           { status: 200 },
         );
       } catch (error) {
-        console.error('Failed to create assistant message after saving document:', error);
-        return new Response(
-            JSON.stringify({ error: 'Document saved, but failed to create chat message.', documentId: document?.id ?? 'unknown' }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            }
-        );
+        console.error('Failed to create assistant message:', error);
+        // Still return the document even if message creation fails
+        return Response.json(document, { status: 200 });
       }
     }
 

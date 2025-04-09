@@ -1,8 +1,5 @@
-// import { useEffect } from 'react';
-// import * as pdfjsLib from 'pdfjs-dist';
 import { Toaster } from 'sonner';
 import type { Metadata } from 'next';
-// import { Inter } from 'next/font/google';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import { ThemeProvider } from '@/components/theme-provider';
@@ -21,14 +18,6 @@ export const viewport = {
   maximumScale: 1, // Disable auto-zoom on mobile Safari
 };
 
-// Remove Inter definition
-// const inter = Inter({
-//   subsets: ['latin'],
-//   display: 'swap',
-//   variable: '--font-inter',
-// });
-
-// Add Geist definitions
 const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
@@ -70,7 +59,6 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      // className={cn(inter.variable)}
       className={`${geist.variable} ${geistMono.variable}`}
     >
       <head>

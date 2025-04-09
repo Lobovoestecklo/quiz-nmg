@@ -116,7 +116,9 @@ export async function ensureChatExists({
   try {
     const existingChat = await getChatById({ id: chatId });
     if (!existingChat) {
-      console.log(`Chat ${chatId} not found, creating new chat with title "${title}" for user ${userId}`);
+      console.log(
+        `Chat ${chatId} not found, creating new chat with title "${title}" for user ${userId}`,
+      );
       await saveChat({
         id: chatId,
         userId: userId,
@@ -129,7 +131,9 @@ export async function ensureChatExists({
   } catch (error) {
     console.error(`Error ensuring chat ${chatId} exists:`, error);
     // Re-throw the error to be caught by the calling function
-    throw new Error(`Failed to ensure chat exists: ${(error as Error).message}`);
+    throw new Error(
+      `Failed to ensure chat exists: ${(error as Error).message}`,
+    );
   }
 }
 
@@ -214,14 +218,17 @@ export async function saveDocument({
   userId: string;
 }) {
   try {
-    return await db.insert(document).values({
-      id,
-      title,
-      kind,
-      content,
-      userId,
-      createdAt: new Date(),
-    }).returning();
+    return await db
+      .insert(document)
+      .values({
+        id,
+        title,
+        kind,
+        content,
+        userId,
+        createdAt: new Date(),
+      })
+      .returning();
   } catch (error) {
     console.error('Failed to save document in database');
     throw error;
