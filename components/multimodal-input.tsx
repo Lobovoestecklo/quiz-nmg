@@ -325,6 +325,7 @@ function PureAttachmentsButton({
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [hasDocuments, setHasDocuments] = useState(false);
 
   const handleInsertScenario = useCallback(async () => {
     if (!isWithScenarioInsert || !chatId || !title || !content) return;
@@ -459,6 +460,28 @@ function PureAttachmentsButton({
     [chatId, setMessages],
   );
 
+  // Check if documents exist for this chat
+  useEffect(() => {
+    if (!chatId) return;
+
+    const checkForDocuments = async () => {
+      try {
+        const response = await fetch(
+          `/api/chat/documents/check?chatId=${chatId}`,
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setHasDocuments(data.hasDocuments);
+        }
+      } catch (error) {
+        console.error('Error checking for documents:', error);
+      }
+    };
+
+    checkForDocuments();
+  }, [chatId, messages]); // Re-check when messages change
+
   return (
     <>
       <input
@@ -518,42 +541,52 @@ function PureAttachmentsButton({
               });
             }}
             asChild
+            disabled={hasDocuments || status !== 'ready'}
           >
             <button
               type="button"
               className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
-              disabled={status !== 'ready'}
+              disabled={hasDocuments || status !== 'ready'}
             >
               <div className="flex flex-col gap-1 items-start">
-                <div>Вставить сценарий из pdf файла</div>
+                <div>
+                  {hasDocuments
+                    ? 'В этом чате уже есть документы'
+                    : 'Вставить сценарий из pdf файла'}
+                </div>
                 <div className="text-xs text-muted-foreground">
-                  Текст будет извлечен
+                  {hasDocuments ? '' : 'Текст будет извлечен'}
                 </div>
               </div>
             </button>
           </DropdownMenuItem>
-          {isWithScenarioInsert && chatId && title && content && (
-            <DropdownMenuItem
-              onSelect={() => {
-                setOpen(false);
-                startTransition(handleInsertScenario);
-              }}
-              asChild
-            >
-              <button
-                type="button"
-                className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
-                disabled={status !== 'ready'}
+          {isWithScenarioInsert &&
+            chatId &&
+            title &&
+            content &&
+            !hasDocuments && (
+              <DropdownMenuItem
+                onSelect={() => {
+                  setOpen(false);
+                  startTransition(handleInsertScenario);
+                }}
+                asChild
+                disabled={hasDocuments || status !== 'ready'}
               >
-                <div className="flex flex-col gap-1 items-start">
-                  <div>Вставить свой сценарий</div>
-                  <div className="text-xs text-muted-foreground">
-                    В виде текста
+                <button
+                  type="button"
+                  className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
+                  disabled={hasDocuments || status !== 'ready'}
+                >
+                  <div className="flex flex-col gap-1 items-start">
+                    <div>Вставить свой сценарий</div>
+                    <div className="text-xs text-muted-foreground">
+                      В виде текста
+                    </div>
                   </div>
-                </div>
-              </button>
-            </DropdownMenuItem>
-          )}
+                </button>
+              </DropdownMenuItem>
+            )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

@@ -385,3 +385,29 @@ export async function updateChatVisiblityById({
     throw error;
   }
 }
+
+export async function checkChatHasDocuments({
+  chatId,
+}: {
+  chatId: string;
+}): Promise<boolean> {
+  try {
+    // Get messages for this chat using your existing query function
+    const messagesWithDocuments = await getMessagesByChatId({ id: chatId });
+
+    // Check if any message contains a document creation tool invocation
+    return messagesWithDocuments.some((message) => {
+      if (!message.parts || !Array.isArray(message.parts)) return false;
+
+      return message.parts.some(
+        (part: any) =>
+          part.type === 'tool-invocation' &&
+          (part.toolInvocation?.toolName === 'createDocument' ||
+            part.toolInvocation?.toolName === 'updateDocument'),
+      );
+    });
+  } catch (error) {
+    console.error('Failed to check if chat has documents:', error);
+    throw error;
+  }
+}
