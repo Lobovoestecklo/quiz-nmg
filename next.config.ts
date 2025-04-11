@@ -1,4 +1,6 @@
 import type { NextConfig } from 'next';
+import CopyPlugin from 'copy-webpack-plugin';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -10,6 +12,23 @@ const nextConfig: NextConfig = {
         hostname: 'avatar.vercel.sh',
       },
     ],
+  },
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    config.plugins = config.plugins || [];
+
+    config.plugins.push(
+      new CopyPlugin({
+        patterns: [
+          {
+            from: path.join(
+              path.resolve(__dirname, 'node_modules/pdfjs-dist/build/pdf.worker.min.mjs')
+            ),
+            to: path.join(path.resolve(__dirname, 'public')),
+          },
+        ],
+      }),
+    );
+    return config;
   },
 };
 

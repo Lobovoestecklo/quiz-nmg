@@ -104,6 +104,39 @@ export async function getChatById({ id }: { id: string }) {
   }
 }
 
+export async function ensureChatExists({
+  chatId,
+  userId,
+  title,
+}: {
+  chatId: string;
+  userId: string;
+  title: string;
+}) {
+  try {
+    const existingChat = await getChatById({ id: chatId });
+    if (!existingChat) {
+      console.log(
+        `Chat ${chatId} not found, creating new chat with title "${title}" for user ${userId}`,
+      );
+      await saveChat({
+        id: chatId,
+        userId: userId,
+        title: title,
+      });
+      console.log(`Chat ${chatId} created successfully.`);
+    } else {
+      console.log(`Chat ${chatId} already exists.`);
+    }
+  } catch (error) {
+    console.error(`Error ensuring chat ${chatId} exists:`, error);
+    // Re-throw the error to be caught by the calling function
+    throw new Error(
+      `Failed to ensure chat exists: ${(error as Error).message}`,
+    );
+  }
+}
+
 export async function saveMessages({
   messages,
 }: {
@@ -185,14 +218,17 @@ export async function saveDocument({
   userId: string;
 }) {
   try {
-    return await db.insert(document).values({
-      id,
-      title,
-      kind,
-      content,
-      userId,
-      createdAt: new Date(),
-    });
+    return await db
+      .insert(document)
+      .values({
+        id,
+        title,
+        kind,
+        content,
+        userId,
+        createdAt: new Date(),
+      })
+      .returning();
   } catch (error) {
     console.error('Failed to save document in database');
     throw error;
@@ -346,6 +382,32 @@ export async function updateChatVisiblityById({
     return await db.update(chat).set({ visibility }).where(eq(chat.id, chatId));
   } catch (error) {
     console.error('Failed to update chat visibility in database');
+    throw error;
+  }
+}
+
+export async function checkChatHasDocuments({
+  chatId,
+}: {
+  chatId: string;
+}): Promise<boolean> {
+  try {
+    // Get messages for this chat using your existing query function
+    const messagesWithDocuments = await getMessagesByChatId({ id: chatId });
+
+    // Check if any message contains a document creation tool invocation
+    return messagesWithDocuments.some((message) => {
+      if (!message.parts || !Array.isArray(message.parts)) return false;
+
+      return message.parts.some(
+        (part: any) =>
+          part.type === 'tool-invocation' &&
+          (part.toolInvocation?.toolName === 'createDocument' ||
+            part.toolInvocation?.toolName === 'updateDocument'),
+      );
+    });
+  } catch (error) {
+    console.error('Failed to check if chat has documents:', error);
     throw error;
   }
 }

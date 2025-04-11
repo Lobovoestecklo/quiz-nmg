@@ -145,9 +145,9 @@ function PureArtifact({
 
           if (currentDocument.content !== updatedContent) {
             const response = await fetch(
-              `/api/document?id=${artifact.documentId}&is_manual=1&chatId=${chatId}`,
+              `/api/document/manual?id=${artifact.documentId}&chatId=${chatId}`,
               {
-                method: 'POST',
+                method: 'PATCH',
                 body: JSON.stringify({
                   title: artifact.title,
                   content: updatedContent,
@@ -205,9 +205,6 @@ function PureArtifact({
 
   const saveContent2 = useCallback(
     (updatedContent: string, debounce: boolean) => {
-      console.log('updating content');
-      console.log('updatedContent', updatedContent);
-      console.log('debounce', debounce);
       if (document && updatedContent !== document.content) {
         setIsContentDirty(true);
 

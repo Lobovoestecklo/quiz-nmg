@@ -1,10 +1,14 @@
-// app/(chat)/api/scenario/route.ts
 import { auth } from '@/app/(auth)/auth';
-import { getChatById, saveChat, saveMessages , saveDocument } from '@/lib/db/queries';
+import {
+  saveDocument,
+  saveChat,
+  saveMessages,
+  getChatById,
+} from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
 export async function POST(request: Request) {
-  const { chatId, title, content } = await request.json();
+  const { id, chatId, title, content } = await request.json();
 
   if (!chatId || !title || !content) {
     return new Response('Missing required fields', { status: 400 });
@@ -34,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     // Generate a unique ID for the document
-    const documentId = generateUUID();
+    const documentId = id || generateUUID();
 
     // Create the document
     await saveDocument({
@@ -47,7 +51,7 @@ export async function POST(request: Request) {
 
     // Create message parts with tool invocation
     const messageParts = [
-      { type: 'text', text: 'Создаю новый сценарий...' },
+      { type: 'text', text: 'Извлекаю текст из pdf...' },
       {
         type: 'tool-invocation',
         toolInvocation: {
@@ -63,13 +67,14 @@ export async function POST(request: Request) {
             id: documentId,
             title: title,
             kind: 'text',
-            content: 'A document was created and is now visible to the user.',
+            content:
+              'A document was created from pdf and is now visible to the user.',
           },
         },
       },
       {
         type: 'text',
-        text: `Сценарий ${title} успешно создан.`,
+        text: `Сценарий ${title} успешно извлечен из pdf.`,
       },
     ];
 
