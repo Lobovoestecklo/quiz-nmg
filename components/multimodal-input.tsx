@@ -441,10 +441,17 @@ function PureAttachmentsButton({
         const result = await response.json();
 
         if (result.savedMessage) {
-          setMessages([...messages, result.savedMessage]);
-          toast.success('Документ успешно создан и добавлен в чат.', {
-            id: loadingToastId,
-          });
+          if (result.isNewChat) {
+            toast.success('Сценарий успешно создан', {
+              id: loadingToastId,
+            });
+            router.push(`/chat/${result.chatId}`);
+          } else {
+            setMessages([...messages, result.savedMessage]);
+            toast.success('Документ успешно создан и добавлен в чат.', {
+              id: loadingToastId,
+            });
+          }
         } else {
           toast.success('Документ успешно создан (но не добавлен в чат).', {
             id: loadingToastId,
