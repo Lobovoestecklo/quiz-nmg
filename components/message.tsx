@@ -12,7 +12,7 @@ import { MessageActions } from './message-actions';
 import { PreviewAttachment } from './preview-attachment';
 import { Weather } from './weather';
 import equal from 'fast-deep-equal';
-import { cn } from '@/lib/utils';
+import { cn, getCustomScriptantinoFormat } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
@@ -123,7 +123,9 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>{part.text}</Markdown>
+                        <Markdown>
+                          {getCustomScriptantinoFormat(part.text)}
+                        </Markdown>
                       </div>
                     </div>
                   );
@@ -272,9 +274,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
-          </div>
+          <div className="flex flex-col gap-4 text-muted-foreground">...</div>
         </div>
       </div>
     </motion.div>

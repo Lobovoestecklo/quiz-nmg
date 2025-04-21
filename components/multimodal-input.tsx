@@ -239,7 +239,7 @@ function PureMultimodalInput({
         value={input}
         onChange={handleInput}
         className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
+          'min-h-[24px] max-h-[400px] overflow-y-auto overflow-x-hidden resize-none rounded-2xl !text-base bg-muted pb-10 dark:border-zinc-700',
           className,
         )}
         rows={2}
@@ -362,7 +362,7 @@ function PureAttachmentsButton({
       console.error('Error creating scenario:', error);
       toast.error('Не удалось создать сценарий');
     }
-  }, [isWithScenarioInsert, chatId, title, content]);
+  }, [isWithScenarioInsert, chatId, title, content, messages, setMessages]);
 
   const handlePdfFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -441,10 +441,17 @@ function PureAttachmentsButton({
         const result = await response.json();
 
         if (result.savedMessage) {
-          setMessages([...messages, result.savedMessage]);
-          toast.success('Документ успешно создан и добавлен в чат.', {
-            id: loadingToastId,
-          });
+          if (result.isNewChat) {
+            toast.success('Сценарий успешно создан', {
+              id: loadingToastId,
+            });
+            router.push(`/chat/${result.chatId}`);
+          } else {
+            setMessages([...messages, result.savedMessage]);
+            toast.success('Документ успешно создан и добавлен в чат.', {
+              id: loadingToastId,
+            });
+          }
         } else {
           toast.success('Документ успешно создан (но не добавлен в чат).', {
             id: loadingToastId,
@@ -457,7 +464,7 @@ function PureAttachmentsButton({
         });
       }
     },
-    [chatId, setMessages],
+    [chatId, setMessages, messages],
   );
 
   // Check if documents exist for this chat
@@ -515,7 +522,7 @@ function PureAttachmentsButton({
           align="start"
           className="w-[240px]"
         >
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             onSelect={() => {
               setOpen(false);
               startTransition(() => {
@@ -532,7 +539,7 @@ function PureAttachmentsButton({
               <div>Загрузить изображение</div>
               <div className="text-xs text-muted-foreground"></div>
             </button>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem
             onSelect={() => {
               setOpen(false);

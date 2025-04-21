@@ -67,8 +67,7 @@ export async function POST(request: Request) {
             id: documentId,
             title: title,
             kind: 'text',
-            content:
-              'A document was created from pdf and is now visible to the user.',
+            content,
           },
         },
       },

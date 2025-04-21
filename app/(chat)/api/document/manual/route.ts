@@ -46,6 +46,7 @@ export async function PATCH(request: Request) {
           id,
           title,
           description,
+          content,
         );
 
         // Generate a unique ID for the message

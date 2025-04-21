@@ -168,6 +168,7 @@ export const createDocumentUpdateMessage = (
   documentId: string,
   title: string,
   description: string,
+  content: string,
 ) => {
   return [
     {
@@ -189,8 +190,7 @@ export const createDocumentUpdateMessage = (
           id: documentId,
           title: title,
           kind: 'text',
-          content:
-            'Документ успешно обновлен. Нельзя сразу вызывать updateDocument или createDocument в тот же запрос. Пожалуйста, ОБЯЗАТЕЛЬНО дождитесь отзыва пользователя перед дальнейшими изменениями.',
+          content,
           justUpdated: true,
         },
       },
@@ -201,3 +201,21 @@ export const createDocumentUpdateMessage = (
     },
   ];
 };
+
+export function getCustomScriptantinoFormat(text: any) {
+  if (!text || typeof text !== 'string') return text;
+
+  return (
+    text
+      // Opening tags
+      .replace(/<разбор_сценария>/g, '**Разбор сценария:**\n')
+      .replace(/<предложения>/g, '**Предложения:**\n')
+      .replace(/<объяснение>/g, '**Объяснение:**\n')
+      .replace(/<поддержка>/g, '**Поддержка:**\n')
+      // Closing tags
+      .replace(/<\/разбор_сценария>/g, '\n')
+      .replace(/<\/предложения>/g, '\n')
+      .replace(/<\/объяснение>/g, '\n')
+      .replace(/<\/поддержка>/g, '\n')
+  );
+}
