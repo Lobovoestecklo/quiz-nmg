@@ -201,3 +201,21 @@ export const createDocumentUpdateMessage = (
     },
   ];
 };
+
+export function getCustomScriptantinoFormat(text: any) {
+  if (!text || typeof text !== 'string') return text;
+
+  return (
+    text
+      // Opening tags
+      .replace(/<разбор_сценария>/g, '**Разбор сценария:**\n')
+      .replace(/<предложения>/g, '**Предложения:**\n')
+      .replace(/<объяснение>/g, '**Объяснение:**\n')
+      .replace(/<поддержка>/g, '**Поддержка:**\n')
+      // Closing tags
+      .replace(/<\/разбор_сценария>/g, '\n')
+      .replace(/<\/предложения>/g, '\n')
+      .replace(/<\/объяснение>/g, '\n')
+      .replace(/<\/поддержка>/g, '\n')
+  );
+}
