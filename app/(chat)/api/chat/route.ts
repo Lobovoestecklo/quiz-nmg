@@ -99,28 +99,28 @@ export async function POST(request: Request) {
           maxTokens: 4000,
           // TODO: check whether we need cache control ephemeral
           maxSteps: 5,
-          experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
-              ? []
-              : [
-                  // 'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'getDocument',
-                  //'requestSuggestions',
-                ],
+          // experimental_activeTools:
+          //   selectedChatModel === 'chat-model-reasoning'
+          //     ? []
+          //     : [
+          //         // 'getWeather',
+          //         'createDocument',
+          //         'updateDocument',
+          //         'getDocument',
+          //         //'requestSuggestions',
+          //       ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          tools: {
-            // getWeather,
-            createDocument: createDocument({ session, dataStream }),
-            updateDocument: updateDocument({ session, dataStream }),
-            getDocument: getDocument({ session, dataStream }),
-            // requestSuggestions: requestSuggestions({
-            //   session,
-            //   dataStream,
-            // }),
-          },
+          // tools: {
+          //   // getWeather,
+          //   createDocument: createDocument({ session, dataStream }),
+          //   updateDocument: updateDocument({ session, dataStream }),
+          //   getDocument: getDocument({ session, dataStream }),
+          //   // requestSuggestions: requestSuggestions({
+          //   //   session,
+          //   //   dataStream,
+          //   // }),
+          // },
           onFinish: async ({ response }) => {
             if (session.user?.id) {
               try {
