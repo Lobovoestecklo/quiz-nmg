@@ -522,7 +522,7 @@ function PureAttachmentsButton({
           align="start"
           className="w-[240px]"
         >
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             onSelect={() => {
               setOpen(false);
               startTransition(() => {
@@ -539,7 +539,7 @@ function PureAttachmentsButton({
               <div>Загрузить изображение</div>
               <div className="text-xs text-muted-foreground"></div>
             </button>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem
             onSelect={() => {
               setOpen(false);
