@@ -362,7 +362,7 @@ function PureAttachmentsButton({
       console.error('Error creating scenario:', error);
       toast.error('Не удалось создать сценарий');
     }
-  }, [isWithScenarioInsert, chatId, title, content]);
+  }, [isWithScenarioInsert, chatId, title, content, messages, setMessages]);
 
   const handlePdfFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -457,7 +457,7 @@ function PureAttachmentsButton({
         });
       }
     },
-    [chatId, setMessages],
+    [chatId, setMessages, messages],
   );
 
   // Check if documents exist for this chat
