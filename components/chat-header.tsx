@@ -63,13 +63,13 @@ function PureChatHeader({
         />
       )} */}
 
-      {!isReadonly && (
+      {/* {!isReadonly && (
         <VisibilitySelector
           chatId={chatId}
           selectedVisibilityType={selectedVisibilityType}
           className="order-1 md:order-3"
         />
-      )}
+      )} */}
     </header>
   );
 }
