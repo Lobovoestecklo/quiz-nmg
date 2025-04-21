@@ -1,6 +1,11 @@
 // app/(chat)/api/scenario/route.ts
 import { auth } from '@/app/(auth)/auth';
-import { getChatById, saveChat, saveMessages , saveDocument } from '@/lib/db/queries';
+import {
+  getChatById,
+  saveChat,
+  saveMessages,
+  saveDocument,
+} from '@/lib/db/queries';
 import { generateUUID } from '@/lib/utils';
 
 export async function POST(request: Request) {
@@ -63,7 +68,7 @@ export async function POST(request: Request) {
             id: documentId,
             title: title,
             kind: 'text',
-            content: 'A document was created and is now visible to the user.',
+            content,
           },
         },
       },
