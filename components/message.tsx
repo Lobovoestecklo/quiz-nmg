@@ -272,9 +272,7 @@ export const ThinkingMessage = () => {
         </div>
 
         <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-4 text-muted-foreground">
-            Hmm...
-          </div>
+          <div className="flex flex-col gap-4 text-muted-foreground">...</div>
         </div>
       </div>
     </motion.div>
