@@ -168,6 +168,7 @@ export const createDocumentUpdateMessage = (
   documentId: string,
   title: string,
   description: string,
+  content: string,
 ) => {
   return [
     {
@@ -189,8 +190,7 @@ export const createDocumentUpdateMessage = (
           id: documentId,
           title: title,
           kind: 'text',
-          content:
-            'Документ успешно обновлен. Нельзя сразу вызывать updateDocument или createDocument в тот же запрос. Пожалуйста, ОБЯЗАТЕЛЬНО дождитесь отзыва пользователя перед дальнейшими изменениями.',
+          content,
           justUpdated: true,
         },
       },
