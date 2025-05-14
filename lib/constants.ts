@@ -8,3 +8,5 @@ export const isTestEnvironment = Boolean(
 
 export const PDF_MIME_TYPE = 'application/pdf';
 export const PDF_EXTENSION = '.pdf';
+
+export const CHUNKS_SAVE_INTERVAL = 1000;
