@@ -121,7 +121,11 @@ export async function POST(request: Request) {
           //   //   dataStream,
           //   // }),
           // },
+          onChunk: async (event) => {
+            console.log('onChunk', event);
+          },
           onFinish: async ({ response }) => {
+            console.log('onFinish', response);
             if (session.user?.id) {
               try {
                 const assistantId = getTrailingMessageId({
