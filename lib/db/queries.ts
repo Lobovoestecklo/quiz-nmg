@@ -150,6 +150,28 @@ export async function saveMessages({
   }
 }
 
+export async function upsertMessage({
+  msg,
+}: {
+  msg: DBMessage;
+}) {
+  try {
+    return await db
+      .insert(message)
+      .values(msg)
+      .onConflictDoUpdate({
+        target: [message.id],
+        set: {
+          parts: msg.parts,
+          attachments: msg.attachments,
+        },
+      });
+  } catch (ex) {
+    console.error('Failed to upsert message in database', ex);
+    throw ex;
+  }
+}
+
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
     return await db
