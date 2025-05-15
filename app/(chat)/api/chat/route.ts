@@ -1,4 +1,5 @@
 import {
+  APICallError,
   UIMessage,
   appendResponseMessages,
   createDataStreamResponse,
@@ -194,11 +195,23 @@ export async function POST(request: Request) {
       },
       onError: (error) => {
         console.error('Error in chat API:', error);
+        if (APICallError.isInstance(error)) {
+          if (error.statusCode === 429) {
+            return 'Количество токенов превысило лимит!';
+          }
+        }
         return 'Произошла ошибка!';
       },
     });
   } catch (error) {
     console.error('Error in chat API:', error);
+    if (APICallError.isInstance(error)) {
+      if (error.statusCode === 429) {
+        return new Response('Количество токенов превысило лимит!', {
+          status: 429,
+        });
+      }
+    }
     return new Response('Произошла ошибка при обработке вашего запроса!', {
       status: 404,
     });
