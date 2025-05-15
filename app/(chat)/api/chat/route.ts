@@ -12,6 +12,7 @@ import {
   getChatById,
   saveChat,
   saveMessages,
+  upsertMessage,
 } from '@/lib/db/queries';
 import {
   generateUUID,
@@ -23,7 +24,7 @@ import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
 import { getWeather } from '@/lib/ai/tools/get-weather';
-import { isProductionEnvironment } from '@/lib/constants';
+import { CHUNKS_SAVE_INTERVAL, isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { getDocument } from '@/lib/ai/tools/get-document';
 
@@ -43,6 +44,10 @@ export async function POST(request: Request) {
 
     console.log('selectedChatModel', selectedChatModel);
     console.log('messages', messages);
+
+    const assistantMessageId = generateUUID();
+    let startChunkUpdateTimestamp: Date | null = null;
+    let chunksText = '';
 
     const session = await auth();
 
@@ -121,8 +126,35 @@ export async function POST(request: Request) {
           //   //   dataStream,
           //   // }),
           // },
-          onChunk: async (event) => {
-            console.log('onChunk', event);
+          onChunk: async ({ chunk }) => {
+            if (startChunkUpdateTimestamp === null) {
+              startChunkUpdateTimestamp = new Date();
+            }
+
+            console.log(
+              'new Date().getTime() - startChunkUpdateTimestamp.getTime()',
+              new Date().getTime() - startChunkUpdateTimestamp.getTime(),
+            );
+            if (chunk.type === 'text-delta') {
+              chunksText += chunk.textDelta;
+            }
+            console.log('event', chunk);
+            if (
+              new Date().getTime() - startChunkUpdateTimestamp.getTime() >
+                CHUNKS_SAVE_INTERVAL &&
+              chunksText.length > 0
+            ) {
+              await upsertMessage({
+                id: assistantMessageId,
+                chatId: id,
+                role: 'assistant',
+                parts: [{ type: 'text', text: chunksText }],
+                attachments: [],
+                createdAt: new Date(),
+              });
+              startChunkUpdateTimestamp = new Date();
+              console.log('UPSERT EVENT');
+            }
           },
           onFinish: async ({ response }) => {
             console.log('onFinish', response);
@@ -145,18 +177,15 @@ export async function POST(request: Request) {
                   responseMessages: response.messages,
                 });
 
-                await saveMessages({
-                  messages: [
-                    {
-                      id: assistantId,
-                      chatId: id,
-                      role: assistantMessage.role,
-                      parts: assistantMessage.parts,
-                      attachments:
-                        assistantMessage.experimental_attachments ?? [],
-                      createdAt: new Date(),
-                    },
-                  ],
+                console.log('assistantMessage', assistantMessage);
+
+                await upsertMessage({
+                  id: assistantMessageId,
+                  chatId: id,
+                  role: assistantMessage.role,
+                  parts: assistantMessage.parts,
+                  attachments: assistantMessage.experimental_attachments ?? [],
+                  createdAt: new Date(),
                 });
               } catch (_) {
                 console.error('Произошла ошибка при сохранении чата');
