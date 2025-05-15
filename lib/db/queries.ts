@@ -156,7 +156,7 @@ export async function upsertMessage(msg: DBMessage) {
       .insert(message)
       .values(msg)
       .onConflictDoUpdate({
-        target: [message.id],
+        target: message.id,
         set: {
           parts: msg.parts,
           attachments: msg.attachments,
