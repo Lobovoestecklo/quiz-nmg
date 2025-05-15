@@ -150,11 +150,7 @@ export async function saveMessages({
   }
 }
 
-export async function upsertMessage({
-  msg,
-}: {
-  msg: DBMessage;
-}) {
+export async function upsertMessage(msg: DBMessage) {
   try {
     return await db
       .insert(message)
