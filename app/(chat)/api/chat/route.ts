@@ -42,9 +42,6 @@ export async function POST(request: Request) {
       selectedChatModel: string;
     } = await request.json();
 
-    console.log('selectedChatModel', selectedChatModel);
-    console.log('messages', messages);
-
     const assistantMessageId = generateUUID();
     let startChunkUpdateTimestamp: Date | null = null;
     let chunksText = '';
@@ -131,14 +128,9 @@ export async function POST(request: Request) {
               startChunkUpdateTimestamp = new Date();
             }
 
-            console.log(
-              'new Date().getTime() - startChunkUpdateTimestamp.getTime()',
-              new Date().getTime() - startChunkUpdateTimestamp.getTime(),
-            );
             if (chunk.type === 'text-delta') {
               chunksText += chunk.textDelta;
             }
-            console.log('event', chunk);
             if (
               new Date().getTime() - startChunkUpdateTimestamp.getTime() >
                 CHUNKS_SAVE_INTERVAL &&
@@ -153,11 +145,9 @@ export async function POST(request: Request) {
                 createdAt: new Date(),
               });
               startChunkUpdateTimestamp = new Date();
-              console.log('UPSERT EVENT');
             }
           },
           onFinish: async ({ response }) => {
-            console.log('onFinish', response);
             if (session.user?.id) {
               try {
                 const assistantId = getTrailingMessageId({
@@ -176,8 +166,6 @@ export async function POST(request: Request) {
                   messages: [userMessage],
                   responseMessages: response.messages,
                 });
-
-                console.log('assistantMessage', assistantMessage);
 
                 await upsertMessage({
                   id: assistantMessageId,
