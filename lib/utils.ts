@@ -222,3 +222,46 @@ export function getCustomScriptantinoFormat(text: any) {
       .replace(/<\/редактирование>/g, '</div>')
   );
 }
+
+export function parseModelResponse(text: any) {
+  if (!text || typeof text !== 'string') return text;
+
+  // Split the text by the custom tags to get the segments
+  const segments = [];
+  let remainingText = text;
+
+  // Parse <редактирование> blocks
+  const editingRegex = /<редактирование>([\s\S]*?)<\/редактирование>/g;
+  let editingMatch;
+
+  while ((editingMatch = editingRegex.exec(text)) !== null) {
+    // Add text before the match
+    const beforeText = remainingText.substring(0, editingMatch.index);
+    if (beforeText) segments.push({ type: 'text', content: beforeText });
+
+    // Parse inner content for previousVersion and newFragment
+    const editingContent = editingMatch[1];
+    const previousVersionMatch =
+      /<предыдущая_версия>([\s\S]*?)<\/предыдущая_версия>/g.exec(
+        editingContent,
+      );
+    const newFragmentMatch =
+      /<новый_фрагмент>([\s\S]*?)<\/новый_фрагмент>/g.exec(editingContent);
+
+    segments.push({
+      type: 'editing',
+      previousVersion: previousVersionMatch ? previousVersionMatch[1] : '',
+      newFragment: newFragmentMatch ? newFragmentMatch[1] : '',
+    });
+
+    // Update remaining text
+    remainingText = remainingText.substring(
+      editingMatch.index + editingMatch[0].length,
+    );
+  }
+
+  // Add any remaining text
+  if (remainingText) segments.push({ type: 'text', content: remainingText });
+
+  return segments;
+}
