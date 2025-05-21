@@ -231,6 +231,28 @@ const PurePreviewMessage = ({
                 isLoading={isLoading}
               />
             )}
+            <div
+              key={'test-iddddd'}
+              className="flex flex-row gap-2 items-start"
+            >
+              <div
+                data-testid="message-content"
+                className={cn(
+                  'flex flex-col gap-4 p-4 border rounded-2xl flex flex-row gap-2 items-center justify-between dark:bg-muted dark:border-zinc-700',
+                  {
+                    'bg-primary text-primary-foreground px-3 py-2 rounded-xl': false,
+                  },
+                )}
+              >
+                <Markdown>
+                  Какой-то текст длинный текст Какой-то текст длинный текст
+                  Какой-то текст длинный текст Какой-то текст длинный текст
+                  Какой-то текст длинный текст Какой-то текст длинный текст
+                  Какой-то текст длинный текст Какой-то текст длинный текст
+                  Какой-то текст длинный текст
+                </Markdown>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
