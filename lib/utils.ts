@@ -217,5 +217,8 @@ export function getCustomScriptantinoFormat(text: any) {
       .replace(/<\/предложения>/g, '\n')
       .replace(/<\/объяснение>/g, '\n')
       .replace(/<\/поддержка>/g, '\n')
+      //test
+      .replace(/<редактирование>/g, '<div class="editing-block">')
+      .replace(/<\/редактирование>/g, '</div>')
   );
 }
