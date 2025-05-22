@@ -60,3 +60,28 @@ export const createDecorations = (
 
   return DecorationSet.create(view.state.doc, decorations);
 };
+
+export const findTextPositionInDoc = (doc: Node, searchText: string) => {
+  let positions: { start: number; end: number } | null = null;
+
+  if (!searchText) return null;
+
+  doc.nodesBetween(0, doc.content.size, (node, pos) => {
+    if (node.isText && node.text) {
+      const index = node.text.indexOf(searchText);
+
+      if (index !== -1) {
+        positions = {
+          start: pos + index,
+          end: pos + index + searchText.length,
+        };
+
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  return positions;
+};
