@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { MessageAiResponse } from './message-ai-response';
 
 const PurePreviewMessage = ({
   chatId,
@@ -123,9 +124,13 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>
-                          {getCustomScriptantinoFormat(part.text)}
-                        </Markdown>
+                        {message.role === 'user' ? (
+                          <Markdown>
+                            {getCustomScriptantinoFormat(part.text)}
+                          </Markdown>
+                        ) : (
+                          <MessageAiResponse content={part.text} />
+                        )}
                       </div>
                     </div>
                   );
