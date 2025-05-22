@@ -21,7 +21,7 @@ const PureMessageAiResponse = ({ content }: { content: string }) => {
           );
         } else if (segment.type === 'editing') {
           return (
-            <AiEditingAiBlock
+            <AiEditingBlock
               key={`ai-response-${index}`}
               content={segment.newFragment}
             />
@@ -45,7 +45,7 @@ export const MessageAiResponse = memo(
   },
 );
 
-const PureAiEditingAiBlock = ({ content }: { content: string }) => {
+const PureAiEditingBlock = ({ content }: { content: string }) => {
   return (
     <div className="relative">
       <div
@@ -79,7 +79,7 @@ const PureAiEditingAiBlock = ({ content }: { content: string }) => {
   );
 };
 
-const AiEditingAiBlock = memo(PureAiEditingAiBlock, (prevProps, nextProps) => {
+const AiEditingBlock = memo(PureAiEditingBlock, (prevProps, nextProps) => {
   if (prevProps.content !== nextProps.content) return false;
 
   return true;
