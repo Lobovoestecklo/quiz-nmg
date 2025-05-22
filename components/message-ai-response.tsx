@@ -21,10 +21,7 @@ const PureMessageAiResponse = ({ content }: { content: string }) => {
           );
         } else if (segment.type === 'editing') {
           return (
-            <AiEditingBlock
-              key={`ai-response-${index}`}
-              content={segment.newFragment}
-            />
+            <AiEditingBlock key={`ai-response-${index}`} segment={segment} />
           );
         }
         return null;
@@ -45,7 +42,7 @@ export const MessageAiResponse = memo(
   },
 );
 
-const PureAiEditingBlock = ({ content }: { content: string }) => {
+const PureAiEditingBlock = ({ segment }: { segment: any }) => {
   return (
     <div className="relative">
       <div
@@ -73,14 +70,14 @@ const PureAiEditingBlock = ({ content }: { content: string }) => {
         <div className="w-8" />
       </div>
       <div className="border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700 p-4 sm:px-4 sm:py-4">
-        <Markdown>{content}</Markdown>
+        <Markdown>{segment.newFragment}</Markdown>
       </div>
     </div>
   );
 };
 
 const AiEditingBlock = memo(PureAiEditingBlock, (prevProps, nextProps) => {
-  if (prevProps.content !== nextProps.content) return false;
+  if (!equal(prevProps.segment, nextProps.segment)) return false;
 
   return true;
 });
