@@ -4,6 +4,7 @@ import { getCustomScriptantinoFormat, parseModelResponse } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
 import { Markdown } from './markdown';
+import { useArtifact } from '@/hooks/use-artifact';
 
 const PureMessageAiResponse = ({ content }: { content: string }) => {
   const segments = parseModelResponse(content);
@@ -45,8 +46,45 @@ export const MessageAiResponse = memo(
 );
 
 const PureAiEditingBlock = ({ segment }: { segment: any }) => {
-  const onApply = () => {
+  const { setArtifact } = useArtifact();
+  const onApply = async () => {
     console.log({ segment });
+    const chatId = '1172794d-ec95-42f9-b36f-70cbb33f5cc9';
+    try {
+      const response = await fetch(
+        `/api/document/chat-latest?chatId=${chatId}`,
+      );
+
+      if (!response.ok) {
+        // TODO: show message
+      }
+
+      const data = await response.json();
+      console.log({ data });
+
+      if (!data.found) {
+        // TODO: show message
+      }
+
+      const { document } = data;
+
+      setArtifact({
+        documentId: document.documentId,
+        kind: document.kind,
+        content: document.content,
+        title: document.title,
+        isVisible: true,
+        status: 'idle',
+        boundingBox: {
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+        },
+      });
+    } catch (error) {
+      console.error('Error checking for documents:', error);
+    }
   };
 
   return (
