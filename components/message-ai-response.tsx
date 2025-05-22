@@ -12,7 +12,7 @@ const PureMessageAiResponse = ({ content }: { content: string }) => {
 
   return (
     <>
-      {segments.map((segment, index) => {
+      {segments.map((segment: any, index: number) => {
         if (segment.type === 'text') {
           return (
             <Markdown key={`ai-response-${index}`}>
