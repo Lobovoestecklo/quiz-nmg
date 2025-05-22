@@ -1,3 +1,5 @@
+'use client';
+
 import { getCustomScriptantinoFormat, parseModelResponse } from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
