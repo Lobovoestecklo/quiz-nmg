@@ -43,6 +43,10 @@ export const MessageAiResponse = memo(
 );
 
 const PureAiEditingBlock = ({ segment }: { segment: any }) => {
+  const onApply = () => {
+    console.log({ segment });
+  };
+
   return (
     <div className="relative">
       <div
@@ -52,10 +56,13 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
         <div className="w-full p-4 flex justify-end items-center">
           <div className="absolute right-[9px] top-[13px] flex flex-row gap-2">
             <div className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer">
-              copy
+              Copy
             </div>
-            <div className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer">
-              review
+            <div
+              className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer"
+              onClick={onApply}
+            >
+              Apply
             </div>
           </div>
         </div>
