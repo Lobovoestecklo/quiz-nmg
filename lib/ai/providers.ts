@@ -14,7 +14,7 @@ import {
   titleModel,
 } from './models.test';
 
-const anthropicSonnet3_7ChatModel = anthropic('claude-3-7-sonnet-20250219')
+const anthropicSonnet3_7ChatModel = anthropic('claude-sonnet-4-20250514')
 
 export const myProvider = isTestEnvironment
   ? customProvider({
