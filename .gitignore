@@ -46,4 +46,4 @@ yarn-error.log*
 .cursor
 
 # ai docs
-.ai
+/ai
