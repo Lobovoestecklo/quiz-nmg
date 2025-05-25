@@ -159,7 +159,7 @@ function PureEditor({
     if (
       editorRef.current?.state.doc &&
       content &&
-      // metadata?.scrollToText &&
+      editingMetadata?.scrollToText &&
       status === 'idle' &&
       artifact.isVisible
     ) {
