@@ -49,6 +49,7 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
   const { setArtifact } = useArtifact();
   const onApply = async () => {
     console.log({ segment });
+    // TODO: pass real chatId
     const chatId = '1172794d-ec95-42f9-b36f-70cbb33f5cc9';
     try {
       const response = await fetch(
