@@ -159,7 +159,8 @@ function PureEditor({
       editorRef.current?.state.doc &&
       content &&
       // metadata?.scrollToText &&
-      status === 'idle'
+      status === 'idle' &&
+      artifact.isVisible
     ) {
       // const textToFind = metadata.scrollToText;
       const textToFind = 'Ничего . Мне нравится';
@@ -209,7 +210,7 @@ function PureEditor({
         }, 100);
       }
     }
-  }, [content, metadata, status]);
+  }, [content, metadata, status, artifact.isVisible]);
 
   return (
     <div className="relative prose dark:prose-invert" ref={containerRef} />
