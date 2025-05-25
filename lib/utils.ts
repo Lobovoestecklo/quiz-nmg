@@ -265,3 +265,36 @@ export function parseModelResponse(text: any) {
 
   return segments;
 }
+
+/**
+ * Extracts the first meaningful line of text from content
+ * @param content The document content to extract from
+ * @param minLength Minimum length of text to consider (default: 15)
+ * @returns The first line with length >= minLength, or the first line if none meet the criteria
+ */
+export const getFirstMeaningfulLine = (
+  content: string,
+  minLength: number = 15,
+): string => {
+  if (!content) return '';
+
+  // Split the content by line breaks
+  const lines = content.split(/\r?\n/);
+
+  // Look for the first line with length >= minLength
+  const meaningfulLine = lines.find((line) => {
+    // Clean the line of markdown symbols and trim whitespace
+    const cleanLine = line
+      .replace(/^#+\s|^\*\s|^-\s|^>\s|^\d+\.\s|^\s*/, '')
+      .trim();
+    return cleanLine.length >= minLength;
+  });
+
+  // If no line meets the criteria, return the first non-empty line
+  if (!meaningfulLine) {
+    const firstNonEmptyLine = lines.find((line) => line.trim().length > 0);
+    return firstNonEmptyLine ? firstNonEmptyLine.trim() : '';
+  }
+
+  return meaningfulLine.trim();
+};

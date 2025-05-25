@@ -1,6 +1,10 @@
 'use client';
 
-import { getCustomScriptantinoFormat, parseModelResponse } from '@/lib/utils';
+import {
+  getCustomScriptantinoFormat,
+  getFirstMeaningfulLine,
+  parseModelResponse,
+} from '@/lib/utils';
 import equal from 'fast-deep-equal';
 import { memo } from 'react';
 import { Markdown } from './markdown';
@@ -69,6 +73,9 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
 
       const { document } = data;
 
+      const test = getFirstMeaningfulLine(segment.previousVersion);
+      console.log({ test });
+
       setArtifact({
         documentId: document.documentId,
         kind: document.kind,
@@ -83,7 +90,8 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
           height: 0,
         },
         editingMetadata: {
-          scrollToText: segment.previousVersion,
+          // scrollToText: segment.previousVersion,
+          scrollToText: test,
         },
       });
     } catch (error) {
