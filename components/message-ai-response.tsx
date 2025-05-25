@@ -82,6 +82,9 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
           width: 0,
           height: 0,
         },
+        editingMetadata: {
+          scrollToText: segment.previousVersion,
+        },
       });
     } catch (error) {
       console.error('Error checking for documents:', error);

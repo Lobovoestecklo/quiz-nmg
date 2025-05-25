@@ -44,7 +44,8 @@ function PureEditor({
 }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
-  const { artifact, metadata } = useArtifact();
+  const { artifact } = useArtifact();
+  const editingMetadata = artifact?.editingMetadata;
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
@@ -162,7 +163,8 @@ function PureEditor({
       status === 'idle' &&
       artifact.isVisible
     ) {
-      // const textToFind = metadata.scrollToText;
+      console.log({ editingMetadata });
+      const textToFindTest = editingMetadata?.scrollToText;
       const textToFind = 'Ничего . Мне нравится';
       const positions: any = findTextPositionInDoc(
         editorRef.current.state.doc,
@@ -210,7 +212,7 @@ function PureEditor({
         }, 100);
       }
     }
-  }, [content, metadata, status, artifact.isVisible]);
+  }, [content, editingMetadata, status, artifact.isVisible]);
 
   return (
     <div className="relative prose dark:prose-invert" ref={containerRef} />

@@ -52,6 +52,9 @@ export interface UIArtifact {
     width: number;
     height: number;
   };
+  editingMetadata?: {
+    scrollToText: string;
+  };
 }
 
 function PureArtifact({
