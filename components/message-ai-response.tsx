@@ -73,8 +73,10 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
 
       const { document } = data;
 
-      const test = getFirstMeaningfulLine(segment.previousVersion);
-      console.log({ test });
+      const textLineToScrollTo = getFirstMeaningfulLine(
+        segment.previousVersion,
+      );
+      console.log({ textLineToScrollTo });
 
       setArtifact({
         documentId: document.documentId,
@@ -90,8 +92,7 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
           height: 0,
         },
         editingMetadata: {
-          // scrollToText: segment.previousVersion,
-          scrollToText: test,
+          scrollToText: textLineToScrollTo,
         },
       });
     } catch (error) {
