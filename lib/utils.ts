@@ -308,6 +308,8 @@ interface FixedResult {
   foundText?: string; // For verification
 }
 
+// TODO: rename
+// TODO: move to separate file
 /**
  * Main fixed function with reliable position mapping
  */
