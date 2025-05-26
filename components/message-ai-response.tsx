@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  findPreviousVersionFixed,
   getCustomScriptantinoFormat,
   getFirstMeaningfulLine,
   parseModelResponse,
@@ -78,23 +79,37 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
       );
       console.log({ textLineToScrollTo });
 
-      setArtifact({
-        documentId: document.documentId,
-        kind: document.kind,
-        content: document.content,
-        title: document.title,
-        isVisible: true,
-        status: 'idle',
-        boundingBox: {
-          top: 0,
-          left: 0,
-          width: 0,
-          height: 0,
-        },
-        editingMetadata: {
-          scrollToText: textLineToScrollTo,
-        },
-      });
+      const previousVersionPositions = findPreviousVersionFixed(
+        document.content,
+        segment.previousVersion,
+      );
+
+      console.log('segment.previousVersion', segment.previousVersion);
+
+      console.log({ previousVersionPositions });
+      if (previousVersionPositions) {
+        const { start, end } = previousVersionPositions;
+        const test = document.content.slice(start, end);
+        console.log({ test });
+      }
+
+      //   setArtifact({
+      //     documentId: document.documentId,
+      //     kind: document.kind,
+      //     content: document.content,
+      //     title: document.title,
+      //     isVisible: true,
+      //     status: 'idle',
+      //     boundingBox: {
+      //       top: 0,
+      //       left: 0,
+      //       width: 0,
+      //       height: 0,
+      //     },
+      //     editingMetadata: {
+      //       scrollToText: textLineToScrollTo,
+      //     },
+      //   });
     } catch (error) {
       console.error('Error checking for documents:', error);
     }
