@@ -299,137 +299,268 @@ export const getFirstMeaningfulLine = (
   return meaningfulLine.trim();
 };
 
-interface GeneralResult {
+interface FixedResult {
   start: number;
   end: number;
-  confidence: number; // 0-1 score
+  confidence: number;
   method: string;
   similarity: number;
+  foundText?: string; // For verification
 }
 
 /**
- * Main general-purpose finder
+ * Main fixed function with reliable position mapping
  */
-export function findPreviousVersionGeneral(
+export function findPreviousVersionFixed(
   content: string,
   previousVersion: string,
   options: {
     minSimilarity?: number;
-    windowSizeMultiplier?: number;
-    stepSizeRatio?: number;
+    maxResults?: number;
   } = {},
-): GeneralResult | null {
-  const {
-    minSimilarity = 0.7,
-    windowSizeMultiplier = 1.5,
-    stepSizeRatio = 0.1,
-  } = options;
+): FixedResult | null {
+  const { minSimilarity = 0.7, maxResults = 5 } = options;
 
-  console.log('🔍 Starting general search...');
+  console.log('🔍 Starting fixed search...');
+  console.log('Content length:', content.length);
+  console.log('PreviousVersion length:', previousVersion.length);
 
-  // Strategy 1: Word-based fuzzy matching
-  const fuzzyResult = findByWordMatching(
+  // Strategy 1: Fixed word-based matching
+  const wordResult = findByWordsFixed(content, previousVersion, minSimilarity);
+  if (wordResult && wordResult.start !== wordResult.end) {
+    console.log('✅ Found with fixed word matching');
+    return wordResult;
+  }
+
+  // Strategy 2: Chunk-based sliding window
+  const chunkResult = findByChunks(content, previousVersion, minSimilarity);
+  if (chunkResult && chunkResult.start !== chunkResult.end) {
+    console.log('✅ Found with chunk matching');
+    return chunkResult;
+  }
+
+  // Strategy 3: Sentence-based matching
+  const sentenceResult = findBySentences(
     content,
     previousVersion,
     minSimilarity,
   );
-  if (fuzzyResult && fuzzyResult.confidence > 0.8) {
-    console.log('✅ Found with word matching (high confidence)');
-    return fuzzyResult;
+  if (sentenceResult && sentenceResult.start !== sentenceResult.end) {
+    console.log('✅ Found with sentence matching');
+    return sentenceResult;
   }
 
-  // Strategy 2: Sliding window with content fingerprinting
-  const windowResult = findBySlidingWindow(
-    content,
-    previousVersion,
-    windowSizeMultiplier,
-    stepSizeRatio,
-    minSimilarity,
-  );
-  if (windowResult && windowResult.confidence > 0.7) {
-    console.log('✅ Found with sliding window');
-    return windowResult;
+  // Strategy 4: Simple substring with normalization
+  const normalizedResult = findByNormalization(content, previousVersion);
+  if (normalizedResult && normalizedResult.start !== normalizedResult.end) {
+    console.log('✅ Found with normalization');
+    return normalizedResult;
   }
 
-  // Strategy 3: Multi-anchor approach
-  const anchorResult = findByMultipleAnchors(content, previousVersion);
-  if (anchorResult && anchorResult.confidence > 0.6) {
-    console.log('✅ Found with multiple anchors');
-    return anchorResult;
-  }
-
-  // Strategy 4: Progressive signature matching
-  const progressiveResult = findByProgressiveSignatures(
-    content,
-    previousVersion,
-  );
-  if (progressiveResult && progressiveResult.confidence > 0.5) {
-    console.log('✅ Found with progressive signatures');
-    return progressiveResult;
-  }
-
-  // Return best result found, even if low confidence
-  const allResults = [
-    fuzzyResult,
-    windowResult,
-    anchorResult,
-    progressiveResult,
-  ]
-    .filter((r) => r !== null)
-    .sort((a, b) => (b?.confidence || 0) - (a?.confidence || 0));
-
-  return allResults[0] || null;
+  console.log('❌ No valid match found');
+  return null;
 }
 
 /**
- * Word-based fuzzy matching - most reliable for formatting differences
+ * Fixed word-based matching with proper position mapping
  */
-function findByWordMatching(
+function findByWordsFixed(
   content: string,
   previousVersion: string,
   minSimilarity: number,
-): GeneralResult | null {
-  // Aggressive normalization
-  const normalizeForWords = (text: string) => {
-    return text
+): FixedResult | null {
+  const normalize = (text: string) =>
+    text
       .toLowerCase()
-      .replace(/[^\w\s\u0400-\u04FF]/g, ' ') // Keep only words and Cyrillic
+      .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
-  };
 
-  const normalizedContent = normalizeForWords(content);
-  const normalizedPrevious = normalizeForWords(previousVersion);
+  const normalizedPrevious = normalize(previousVersion);
+  const previousWords = normalizedPrevious
+    .split(' ')
+    .filter((w) => w.length > 0);
 
-  if (!normalizedPrevious) return null;
+  if (previousWords.length < 3) return null;
 
-  const contentWords = normalizedContent.split(' ');
-  const previousWords = normalizedPrevious.split(' ');
+  // Split content into overlapping chunks and test each
+  const targetLength = previousVersion.length;
+  const windowSize = Math.max(targetLength, 500); // Minimum window size
+  const stepSize = Math.floor(windowSize * 0.1); // 10% overlap
 
-  if (previousWords.length < 3) return null; // Need enough words for reliable matching
-
-  const windowSize = previousWords.length;
   let bestMatch: { start: number; end: number; similarity: number } | null =
     null;
   let bestSimilarity = 0;
 
-  // Slide word window across content
-  for (let i = 0; i <= contentWords.length - windowSize; i++) {
-    const windowWords = contentWords.slice(i, i + windowSize);
-    const similarity = calculateWordSimilarity(windowWords, previousWords);
+  for (let i = 0; i <= content.length - windowSize; i += stepSize) {
+    const window = content.substring(i, i + windowSize);
+    const normalizedWindow = normalize(window);
+    const windowWords = normalizedWindow.split(' ').filter((w) => w.length > 0);
+
+    // Calculate word overlap similarity
+    const similarity = calculateWordOverlap(windowWords, previousWords);
 
     if (similarity > bestSimilarity && similarity >= minSimilarity) {
       bestSimilarity = similarity;
 
-      // Map word positions back to character positions
-      const charStart = mapWordsToCharPosition(content, normalizedContent, i);
-      const charEnd = mapWordsToCharPosition(
-        content,
-        normalizedContent,
-        i + windowSize,
-      );
+      // Refine the boundaries within this window
+      const refined = refineWindowBoundaries(window, previousVersion, i);
 
-      bestMatch = { start: charStart, end: charEnd, similarity };
+      bestMatch = {
+        start: refined.start,
+        end: refined.end,
+        similarity,
+      };
+    }
+  }
+
+  if (bestMatch && bestMatch.start !== bestMatch.end) {
+    return {
+      start: bestMatch.start,
+      end: bestMatch.end,
+      confidence: bestMatch.similarity,
+      method: 'words_fixed',
+      similarity: bestMatch.similarity,
+      foundText:
+        content.substring(
+          bestMatch.start,
+          Math.min(bestMatch.start + 100, bestMatch.end),
+        ) + '...',
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Calculate word overlap between two word arrays
+ */
+function calculateWordOverlap(words1: string[], words2: string[]): number {
+  if (words1.length === 0 || words2.length === 0) return 0;
+
+  const set1 = new Set(words1);
+  const set2 = new Set(words2);
+
+  const intersection = new Set([...set1].filter((x) => set2.has(x)));
+
+  // Use intersection over smaller set for better similarity scoring
+  const smallerSetSize = Math.min(set1.size, set2.size);
+  return intersection.size / smallerSetSize;
+}
+
+/**
+ * Refine boundaries within a promising window
+ */
+function refineWindowBoundaries(
+  window: string,
+  previousVersion: string,
+  windowStart: number,
+): { start: number; end: number } {
+  const normalize = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const normalizedWindow = normalize(window);
+  const normalizedPrevious = normalize(previousVersion);
+
+  // Try to find the best substring match within the window
+  const bestSubstring = findBestSubstring(normalizedWindow, normalizedPrevious);
+
+  if (bestSubstring) {
+    // Map normalized positions back to original positions (approximate)
+    const originalStart =
+      windowStart +
+      Math.floor(
+        bestSubstring.start * (window.length / normalizedWindow.length),
+      );
+    const originalEnd =
+      windowStart +
+      Math.floor(bestSubstring.end * (window.length / normalizedWindow.length));
+
+    return {
+      start: Math.max(windowStart, originalStart),
+      end: Math.min(windowStart + window.length, originalEnd),
+    };
+  }
+
+  // Fallback: use the entire window
+  return {
+    start: windowStart,
+    end: windowStart + window.length,
+  };
+}
+
+/**
+ * Find best substring match using sliding window within a window
+ */
+function findBestSubstring(
+  normalizedWindow: string,
+  normalizedTarget: string,
+): { start: number; end: number; score: number } | null {
+  const targetLength = normalizedTarget.length;
+  const windowLength = normalizedWindow.length;
+
+  if (targetLength > windowLength) return null;
+
+  let bestMatch: { start: number; end: number; score: number } | null = null;
+  let bestScore = 0;
+
+  for (let i = 0; i <= windowLength - targetLength; i++) {
+    const substring = normalizedWindow.substring(i, i + targetLength);
+    const score = calculateStringOverlap(substring, normalizedTarget);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = { start: i, end: i + targetLength, score };
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
+ * Calculate string overlap (character level)
+ */
+function calculateStringOverlap(str1: string, str2: string): number {
+  if (!str1 || !str2) return 0;
+
+  const chars1 = str1.split('');
+  const chars2 = str2.split('');
+
+  const set1 = new Set(chars1);
+  const set2 = new Set(chars2);
+
+  const intersection = new Set([...set1].filter((x) => set2.has(x)));
+  const union = new Set([...set1, ...set2]);
+
+  return union.size > 0 ? intersection.size / union.size : 0;
+}
+
+/**
+ * Chunk-based matching - divide text into logical chunks
+ */
+function findByChunks(
+  content: string,
+  previousVersion: string,
+  minSimilarity: number,
+): FixedResult | null {
+  const chunkSize = Math.max(200, Math.floor(previousVersion.length * 0.8));
+  const overlap = Math.floor(chunkSize * 0.2);
+
+  let bestMatch: { start: number; end: number; similarity: number } | null =
+    null;
+  let bestSimilarity = 0;
+
+  for (let i = 0; i <= content.length - chunkSize; i += chunkSize - overlap) {
+    const chunk = content.substring(i, i + chunkSize);
+    const similarity = calculateContentSimilarity(chunk, previousVersion);
+
+    if (similarity > bestSimilarity && similarity >= minSimilarity) {
+      bestSimilarity = similarity;
+      bestMatch = { start: i, end: i + chunkSize, similarity };
     }
   }
 
@@ -438,8 +569,13 @@ function findByWordMatching(
       start: bestMatch.start,
       end: bestMatch.end,
       confidence: bestMatch.similarity,
-      method: 'word_matching',
+      method: 'chunks',
       similarity: bestMatch.similarity,
+      foundText:
+        content.substring(
+          bestMatch.start,
+          Math.min(bestMatch.start + 100, bestMatch.end),
+        ) + '...',
     };
   }
 
@@ -447,403 +583,161 @@ function findByWordMatching(
 }
 
 /**
- * Calculate similarity between word arrays
- */
-function calculateWordSimilarity(words1: string[], words2: string[]): number {
-  if (words1.length === 0 || words2.length === 0) return 0;
-
-  const set1 = new Set(words1);
-  const set2 = new Set(words2);
-
-  const intersection = new Set([...set1].filter((x) => set2.has(x)));
-  const union = new Set([...set1, ...set2]);
-
-  const jaccardSimilarity = intersection.size / union.size;
-
-  // Also consider word order
-  let orderSimilarity = 0;
-  const minLength = Math.min(words1.length, words2.length);
-  for (let i = 0; i < minLength; i++) {
-    if (words1[i] === words2[i]) {
-      orderSimilarity += 1;
-    }
-  }
-  orderSimilarity /= Math.max(words1.length, words2.length);
-
-  // Combined score
-  return jaccardSimilarity * 0.7 + orderSimilarity * 0.3;
-}
-
-/**
- * Map word position to character position
- */
-function mapWordsToCharPosition(
-  originalText: string,
-  normalizedText: string,
-  wordIndex: number,
-): number {
-  if (wordIndex === 0) return 0;
-
-  const normalizedWords = normalizedText.split(' ');
-  const targetWordStart = normalizedWords.slice(0, wordIndex).join(' ');
-
-  // Find this in the original text (approximate)
-  const normalized = originalText
-    .toLowerCase()
-    .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const normalizedPos = normalized.indexOf(targetWordStart);
-
-  if (normalizedPos === -1) return 0;
-
-  // Map back to original (rough approximation)
-  let originalPos = 0;
-  let normalizedCount = 0;
-
-  for (
-    let i = 0;
-    i < originalText.length && normalizedCount < normalizedPos;
-    i++
-  ) {
-    const char = originalText[i];
-    const normalizedChar = char
-      .toLowerCase()
-      .replace(/[^\w\s\u0400-\u04FF]/g, ' ')
-      .replace(/\s+/g, ' ');
-
-    originalPos++;
-    if (normalizedChar) normalizedCount++;
-  }
-
-  return originalPos;
-}
-
-/**
- * Sliding window with content fingerprinting
- */
-function findBySlidingWindow(
-  content: string,
-  previousVersion: string,
-  windowMultiplier: number,
-  stepRatio: number,
-  minSimilarity: number,
-): GeneralResult | null {
-  const targetLength = previousVersion.length;
-  const windowSize = Math.floor(targetLength * windowMultiplier);
-  const stepSize = Math.max(1, Math.floor(targetLength * stepRatio));
-
-  let bestMatch: { start: number; end: number; similarity: number } | null =
-    null;
-  let bestSimilarity = 0;
-
-  for (let i = 0; i <= content.length - windowSize; i += stepSize) {
-    const window = content.substring(i, i + windowSize);
-    const similarity = calculateContentSimilarity(window, previousVersion);
-
-    if (similarity > bestSimilarity && similarity >= minSimilarity) {
-      bestSimilarity = similarity;
-      bestMatch = { start: i, end: i + windowSize, similarity };
-    }
-  }
-
-  if (bestMatch) {
-    // Refine boundaries
-    const refined = refineBoundaries(
-      content,
-      previousVersion,
-      bestMatch.start,
-      bestMatch.end,
-    );
-
-    return {
-      start: refined.start,
-      end: refined.end,
-      confidence: bestMatch.similarity,
-      method: 'sliding_window',
-      similarity: bestMatch.similarity,
-    };
-  }
-
-  return null;
-}
-
-/**
- * Calculate content similarity (formatting-agnostic)
+ * Calculate content similarity using character overlap
  */
 function calculateContentSimilarity(text1: string, text2: string): number {
-  const normalize = (text: string) => {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\u0400-\u04FF]/g, '')
-      .replace(/\s+/g, '');
-  };
+  const normalize = (text: string) =>
+    text.toLowerCase().replace(/[^\w\u0400-\u04FF]/g, '');
 
   const norm1 = normalize(text1);
   const norm2 = normalize(text2);
 
   if (!norm1 || !norm2) return 0;
 
-  // Use longest common subsequence ratio
-  const lcs = longestCommonSubsequence(norm1, norm2);
-  return lcs / Math.max(norm1.length, norm2.length);
-}
+  // Calculate character overlap
+  const chars1 = norm1.split('');
+  const chars2 = norm2.split('');
 
-/**
- * Longest Common Subsequence length
- */
-function longestCommonSubsequence(str1: string, str2: string): number {
-  const m = str1.length;
-  const n = str2.length;
-  const dp: number[][] = Array(m + 1)
-    .fill(null)
-    .map(() => Array(n + 1).fill(0));
+  let matches = 0;
+  const used = new Set<number>();
 
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (str1[i - 1] === str2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+  for (const char1 of chars1) {
+    for (let j = 0; j < chars2.length; j++) {
+      if (!used.has(j) && chars2[j] === char1) {
+        matches++;
+        used.add(j);
+        break;
       }
     }
   }
 
-  return dp[m][n];
+  return matches / Math.max(chars1.length, chars2.length);
 }
 
 /**
- * Multiple anchor points approach
+ * Sentence-based matching for structured content
  */
-function findByMultipleAnchors(
+function findBySentences(
   content: string,
   previousVersion: string,
-): GeneralResult | null {
-  // Extract multiple anchor phrases from previousVersion
-  const anchors = extractAnchorPhrases(previousVersion);
-  if (anchors.length < 2) return null;
-
-  const anchorPositions: { phrase: string; position: number }[] = [];
-
-  // Find each anchor in content
-  for (const anchor of anchors) {
-    const pos = findAnchorInContent(content, anchor);
-    if (pos !== -1) {
-      anchorPositions.push({ phrase: anchor, position: pos });
-    }
-  }
-
-  if (anchorPositions.length < 2) return null;
-
-  // Sort by position
-  anchorPositions.sort((a, b) => a.position - b.position);
-
-  // Estimate boundaries based on anchors
-  const start = anchorPositions[0].position;
-  const end =
-    anchorPositions[anchorPositions.length - 1].position +
-    anchorPositions[anchorPositions.length - 1].phrase.length;
-
-  const similarity = anchorPositions.length / anchors.length;
-
-  return {
-    start,
-    end,
-    confidence: similarity,
-    method: 'multiple_anchors',
-    similarity,
-  };
-}
-
-/**
- * Extract anchor phrases from text
- */
-function extractAnchorPhrases(text: string, minLength: number = 10): string[] {
-  const sentences = text
+  minSimilarity: number,
+): FixedResult | null {
+  const sentences = content.split(/[.!?]+/).filter((s) => s.trim().length > 20);
+  const targetSentences = previousVersion
     .split(/[.!?]+/)
-    .filter((s) => s.trim().length >= minLength);
-  const phrases: string[] = [];
+    .filter((s) => s.trim().length > 10);
 
-  // Add sentence fragments
-  for (const sentence of sentences) {
-    const words = sentence.trim().split(/\s+/);
-    if (words.length >= 3) {
-      // First few words
-      phrases.push(words.slice(0, Math.min(5, words.length)).join(' ').trim());
-      // Last few words
-      if (words.length > 5) {
-        phrases.push(words.slice(-3).join(' ').trim());
+  if (targetSentences.length === 0) return null;
+
+  // Find the best sequence of sentences that matches
+  let bestMatch: { start: number; end: number; similarity: number } | null =
+    null;
+  let bestSimilarity = 0;
+
+  for (let i = 0; i <= sentences.length - targetSentences.length; i++) {
+    const sentenceWindow = sentences.slice(i, i + targetSentences.length);
+    const windowText = sentenceWindow.join('. ');
+    const targetText = targetSentences.join('. ');
+
+    const similarity = calculateContentSimilarity(windowText, targetText);
+
+    if (similarity > bestSimilarity && similarity >= minSimilarity) {
+      bestSimilarity = similarity;
+
+      // Find positions in original content
+      const startSentence = sentences.slice(0, i).join('. ');
+      const start = content.indexOf(sentenceWindow[0].trim());
+      const end =
+        content.indexOf(sentenceWindow[sentenceWindow.length - 1].trim()) +
+        sentenceWindow[sentenceWindow.length - 1].length;
+
+      if (start !== -1 && end > start) {
+        bestMatch = { start, end, similarity };
       }
     }
   }
 
-  // Add line-based phrases
-  const lines = text
-    .split('\n')
-    .filter((line) => line.trim().length >= minLength);
-  for (const line of lines.slice(0, 5)) {
-    // First 5 substantial lines
-    phrases.push(line.trim());
-  }
-
-  return [...new Set(phrases)]; // Remove duplicates
-}
-
-/**
- * Find anchor phrase in content with fuzzy matching
- */
-function findAnchorInContent(content: string, anchor: string): number {
-  const normalize = (text: string) =>
-    text.toLowerCase().replace(/\s+/g, ' ').trim();
-
-  const normalizedContent = normalize(content);
-  const normalizedAnchor = normalize(anchor);
-
-  // Try exact match first
-  let pos = normalizedContent.indexOf(normalizedAnchor);
-  if (pos !== -1) return pos;
-
-  // Try partial matches (80% of anchor)
-  const partialLength = Math.floor(normalizedAnchor.length * 0.8);
-  if (partialLength >= 8) {
-    pos = normalizedContent.indexOf(
-      normalizedAnchor.substring(0, partialLength),
-    );
-    if (pos !== -1) return pos;
-  }
-
-  return -1;
-}
-
-/**
- * Progressive signature matching with increasing lengths
- */
-function findByProgressiveSignatures(
-  content: string,
-  previousVersion: string,
-): GeneralResult | null {
-  const signatureLengths = [10, 15, 20, 25, 30, 40, 50];
-
-  for (const sigLength of signatureLengths) {
-    const result = trySignatureLength(content, previousVersion, sigLength);
-    if (result) {
-      return { ...result, method: `progressive_${sigLength}` };
-    }
+  if (bestMatch) {
+    return {
+      start: bestMatch.start,
+      end: bestMatch.end,
+      confidence: bestMatch.similarity,
+      method: 'sentences',
+      similarity: bestMatch.similarity,
+      foundText:
+        content.substring(
+          bestMatch.start,
+          Math.min(bestMatch.start + 100, bestMatch.end),
+        ) + '...',
+    };
   }
 
   return null;
 }
 
 /**
- * Try specific signature length
+ * Normalization-based fallback
  */
-function trySignatureLength(
+function findByNormalization(
   content: string,
   previousVersion: string,
-  sigLength: number,
-): GeneralResult | null {
-  if (previousVersion.length < sigLength * 2) return null;
+): FixedResult | null {
+  const aggressiveNormalize = (text: string) =>
+    text
+      .toLowerCase()
+      .replace(/[^\w\u0400-\u04FF]/g, '')
+      .replace(/\s+/g, '');
 
-  const startSig = extractSignature(previousVersion, 'start', sigLength);
-  const endSig = extractSignature(previousVersion, 'end', sigLength);
+  const normalizedContent = aggressiveNormalize(content);
+  const normalizedPrevious = aggressiveNormalize(previousVersion);
 
-  if (!startSig || !endSig) return null;
+  if (!normalizedPrevious) return null;
 
-  const startPos = findSignatureInContent(content, startSig);
-  if (startPos === -1) return null;
+  const pos = normalizedContent.indexOf(normalizedPrevious);
 
-  const endPos = findSignatureInContent(content, endSig, startPos);
-  if (endPos === -1) return null;
+  if (pos !== -1) {
+    // Rough mapping back to original positions
+    const ratio = content.length / normalizedContent.length;
+    const start = Math.floor(pos * ratio);
+    const end = Math.floor((pos + normalizedPrevious.length) * ratio);
 
-  const foundLength = endPos - startPos + endSig.length;
-  const expectedLength = previousVersion.length;
-  const lengthRatio = foundLength / expectedLength;
+    return {
+      start: Math.max(0, start),
+      end: Math.min(content.length, end),
+      confidence: 0.8,
+      method: 'normalization',
+      similarity: 1.0,
+      foundText: content.substring(start, Math.min(start + 100, end)) + '...',
+    };
+  }
 
-  if (lengthRatio < 0.3 || lengthRatio > 3) return null;
-
-  return {
-    start: startPos,
-    end: endPos + endSig.length,
-    confidence: Math.min(1, 1 / Math.abs(lengthRatio - 1) + 0.5),
-    method: 'signature',
-    similarity: lengthRatio > 1 ? 1 / lengthRatio : lengthRatio,
-  };
+  return null;
 }
 
 /**
- * Extract meaningful signature from text
+ * Simple debugging function
  */
-function extractSignature(
-  text: string,
-  position: 'start' | 'end',
-  length: number,
-): string {
-  const lines = text.split('\n').filter((line) => line.trim());
-  if (lines.length === 0) return '';
+function debugFind(content: string, previousVersion: string): void {
+  console.log('=== DEBUG INFO ===');
+  console.log('Content length:', content.length);
+  console.log('PreviousVersion length:', previousVersion.length);
+  console.log(
+    'PreviousVersion first 50 chars:',
+    previousVersion.substring(0, 50),
+  );
+  console.log(
+    'PreviousVersion last 50 chars:',
+    previousVersion.substring(previousVersion.length - 50),
+  );
 
-  let signature = '';
-  if (position === 'start') {
-    signature = lines[0] + (lines[1] || '');
+  const result = findPreviousVersionFixed(content, previousVersion, {
+    minSimilarity: 0.6,
+  });
+
+  if (result) {
+    console.log('FOUND:', result);
+    console.log('Found text:', result.foundText);
   } else {
-    signature = lines[lines.length - 1];
-    if (signature.length < length && lines.length > 1) {
-      signature = (lines[lines.length - 2] || '') + signature;
-    }
+    console.log('NOT FOUND');
   }
-
-  return signature
-    .substring(
-      position === 'start' ? 0 : Math.max(0, signature.length - length),
-      position === 'start' ? length : signature.length,
-    )
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-/**
- * Find signature in content with fuzzy matching
- */
-function findSignatureInContent(
-  content: string,
-  signature: string,
-  startFrom: number = 0,
-): number {
-  const normalize = (text: string) =>
-    text.toLowerCase().replace(/\s+/g, ' ').trim();
-
-  const normalizedContent = normalize(content);
-  const normalizedSignature = normalize(signature);
-
-  return normalizedContent.indexOf(normalizedSignature, startFrom);
-}
-
-/**
- * Refine boundaries to better match content structure
- */
-function refineBoundaries(
-  content: string,
-  previousVersion: string,
-  start: number,
-  end: number,
-): { start: number; end: number } {
-  // Look for natural boundaries around the found region
-  const before = content.substring(Math.max(0, start - 100), start);
-  const after = content.substring(end, Math.min(content.length, end + 100));
-
-  // Find section boundaries
-  const sectionStart = before.lastIndexOf('\n##');
-  const sectionEnd = after.indexOf('\n##');
-
-  let refinedStart = start;
-  let refinedEnd = end;
-
-  if (sectionStart !== -1) {
-    refinedStart = Math.max(0, start - 100 + sectionStart + 1);
-  }
-
-  if (sectionEnd !== -1) {
-    refinedEnd = end + sectionEnd;
-  }
-
-  return { start: refinedStart, end: refinedEnd };
 }
