@@ -415,16 +415,24 @@ function findByWordsFixed(
   }
 
   if (bestMatch && bestMatch.start !== bestMatch.end) {
+    // Apply boundary refinement
+    const refined = refineBoundariesSmart(
+      content,
+      bestMatch.start,
+      bestMatch.end,
+      previousVersion,
+    );
+
     return {
-      start: bestMatch.start,
-      end: bestMatch.end,
+      start: refined.start,
+      end: refined.end,
       confidence: bestMatch.similarity,
       method: 'words_fixed',
       similarity: bestMatch.similarity,
       foundText:
         content.substring(
-          bestMatch.start,
-          Math.min(bestMatch.start + 100, bestMatch.end),
+          refined.start,
+          Math.min(refined.start + 100, refined.end),
         ) + '...',
     };
   }
@@ -565,16 +573,24 @@ function findByChunks(
   }
 
   if (bestMatch) {
+    // Apply boundary refinement
+    const refined = refineBoundariesSmart(
+      content,
+      bestMatch.start,
+      bestMatch.end,
+      previousVersion,
+    );
+
     return {
-      start: bestMatch.start,
-      end: bestMatch.end,
+      start: refined.start,
+      end: refined.end,
       confidence: bestMatch.similarity,
       method: 'chunks',
       similarity: bestMatch.similarity,
       foundText:
         content.substring(
-          bestMatch.start,
-          Math.min(bestMatch.start + 100, bestMatch.end),
+          refined.start,
+          Math.min(refined.start + 100, refined.end),
         ) + '...',
     };
   }
@@ -658,16 +674,24 @@ function findBySentences(
   }
 
   if (bestMatch) {
+    // Apply boundary refinement
+    const refined = refineBoundariesSmart(
+      content,
+      bestMatch.start,
+      bestMatch.end,
+      previousVersion,
+    );
+
     return {
-      start: bestMatch.start,
-      end: bestMatch.end,
+      start: refined.start,
+      end: refined.end,
       confidence: bestMatch.similarity,
       method: 'sentences',
       similarity: bestMatch.similarity,
       foundText:
         content.substring(
-          bestMatch.start,
-          Math.min(bestMatch.start + 100, bestMatch.end),
+          refined.start,
+          Math.min(refined.start + 100, refined.end),
         ) + '...',
     };
   }
@@ -698,20 +722,152 @@ function findByNormalization(
   if (pos !== -1) {
     // Rough mapping back to original positions
     const ratio = content.length / normalizedContent.length;
-    const start = Math.floor(pos * ratio);
-    const end = Math.floor((pos + normalizedPrevious.length) * ratio);
+    const roughStart = Math.floor(pos * ratio);
+    const roughEnd = Math.floor((pos + normalizedPrevious.length) * ratio);
+
+    // Apply boundary refinement
+    const refined = refineBoundariesSmart(
+      content,
+      roughStart,
+      roughEnd,
+      previousVersion,
+    );
 
     return {
-      start: Math.max(0, start),
-      end: Math.min(content.length, end),
+      start: refined.start,
+      end: refined.end,
       confidence: 0.8,
       method: 'normalization',
       similarity: 1.0,
-      foundText: content.substring(start, Math.min(start + 100, end)) + '...',
+      foundText:
+        content.substring(
+          refined.start,
+          Math.min(refined.start + 100, refined.end),
+        ) + '...',
     };
   }
 
   return null;
+}
+
+/**
+ * Smart boundary refinement for better start/end positions
+ */
+function refineBoundariesSmart(
+  content: string,
+  start: number,
+  end: number,
+  previousVersion: string,
+): { start: number; end: number } {
+  let refinedStart = start;
+  let refinedEnd = end;
+
+  console.log(
+    `🔧 Refining boundaries from ${start}-${end} (length: ${end - start})`,
+  );
+
+  // === REFINE START POSITION ===
+
+  // Look backwards for section header (##)
+  const beforeStart = content.slice(Math.max(0, start - 300), start);
+  const headerMatches = [...beforeStart.matchAll(/\n(##\s*.+?)$/gm)];
+
+  if (headerMatches.length > 0) {
+    const lastHeader = headerMatches[headerMatches.length - 1];
+    if (lastHeader.index !== undefined) {
+      const headerPos = Math.max(0, start - 300) + lastHeader.index + 1; // +1 to skip the \n
+
+      // Only use header if it's close enough and looks relevant
+      if (start - headerPos < 200) {
+        console.log(
+          `📍 Found header "${lastHeader[1]}" at position ${headerPos}`,
+        );
+        refinedStart = headerPos;
+      }
+    }
+  }
+
+  // If no header found, look for character names (### NAME)
+  if (refinedStart === start) {
+    const characterMatches = [
+      ...beforeStart.matchAll(/\n(###\s*[А-ЯЁA-Z\s]+)$/gm),
+    ];
+    if (characterMatches.length > 0) {
+      const lastCharacter = characterMatches[characterMatches.length - 1];
+      if (lastCharacter.index !== undefined) {
+        const characterPos = Math.max(0, start - 300) + lastCharacter.index + 1;
+        if (start - characterPos < 100) {
+          console.log(
+            `🎭 Found character "${lastCharacter[1]}" at position ${characterPos}`,
+          );
+          refinedStart = characterPos;
+        }
+      }
+    }
+  }
+
+  // === REFINE END POSITION ===
+
+  // Look forwards for next section header
+  const afterEnd = content.slice(end, Math.min(content.length, end + 500));
+  const nextHeaderMatch = afterEnd.match(/\n##\s/);
+
+  if (nextHeaderMatch && nextHeaderMatch.index !== undefined) {
+    const nextHeaderPos = end + nextHeaderMatch.index;
+    console.log(`🔚 Found next section at position ${nextHeaderPos}`);
+    refinedEnd = nextHeaderPos;
+  } else {
+    // Look for sentence boundaries
+    const sentenceEndMatches = [...afterEnd.matchAll(/[.!?]\s*(?:\n|$)/g)];
+    if (sentenceEndMatches.length > 0) {
+      const firstSentenceEnd = sentenceEndMatches[0];
+      if (firstSentenceEnd.index !== undefined) {
+        const sentenceEndPos = end + firstSentenceEnd.index + 1;
+        // Only extend if it's reasonable
+        if (sentenceEndPos - end < 100) {
+          console.log(
+            `📝 Extended to sentence end at position ${sentenceEndPos}`,
+          );
+          refinedEnd = sentenceEndPos;
+        }
+      }
+    }
+  }
+
+  // === VALIDATION ===
+
+  // Make sure we don't go beyond reasonable bounds
+  const originalLength = previousVersion.length;
+  const refinedLength = refinedEnd - refinedStart;
+
+  console.log(
+    `📏 Original length: ${originalLength}, Refined length: ${refinedLength}`,
+  );
+
+  // If refined version is way too long, use more conservative boundaries
+  if (refinedLength > originalLength * 2.5) {
+    console.log(`⚠️ Refined length too long, using conservative boundaries`);
+    // Try a more conservative approach
+    const conservativeStart = Math.max(start - 50, refinedStart);
+    const conservativeEnd = Math.min(end + 50, refinedEnd);
+
+    return { start: conservativeStart, end: conservativeEnd };
+  }
+
+  // Make sure positions are valid
+  refinedStart = Math.max(0, refinedStart);
+  refinedEnd = Math.min(content.length, refinedEnd);
+
+  // Ensure start < end
+  if (refinedStart >= refinedEnd) {
+    console.log(`❌ Invalid refinement, returning original boundaries`);
+    return { start, end }; // Return original if refinement failed
+  }
+
+  console.log(
+    `✅ Refined to ${refinedStart}-${refinedEnd} (length: ${refinedLength})`,
+  );
+  return { start: refinedStart, end: refinedEnd };
 }
 
 /**
