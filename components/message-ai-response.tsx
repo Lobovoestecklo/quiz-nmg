@@ -93,6 +93,10 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
         console.log({ test });
       }
 
+      if (!previousVersionPositions) {
+        // TODO: show message
+      }
+
       //   setArtifact({
       //     documentId: document.documentId,
       //     kind: document.kind,
