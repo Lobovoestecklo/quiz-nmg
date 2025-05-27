@@ -129,7 +129,10 @@ const PurePreviewMessage = ({
                             {getCustomScriptantinoFormat(part.text)}
                           </Markdown>
                         ) : (
-                          <MessageAiResponse content={part.text} />
+                          <MessageAiResponse
+                            chatId={chatId}
+                            content={part.text}
+                          />
                         )}
                       </div>
                     </div>

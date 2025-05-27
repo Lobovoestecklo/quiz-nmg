@@ -11,9 +11,16 @@ import { memo, useCallback } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
 
-const PureMessageAiResponse = ({ content }: { content: string }) => {
+const PureMessageAiResponse = ({
+  content,
+  chatId,
+}: {
+  content: string;
+  chatId: string;
+}) => {
   const segments = parseModelResponse(content);
   console.log({ segments });
+  console.log({ chatId });
   if (!segments || segments.length === 0) {
     return <Markdown>{content}</Markdown>;
   }
@@ -29,7 +36,11 @@ const PureMessageAiResponse = ({ content }: { content: string }) => {
           );
         } else if (segment.type === 'editing') {
           return (
-            <AiEditingBlock key={`ai-response-${index}`} segment={segment} />
+            <AiEditingBlock
+              chatId={chatId}
+              key={`ai-response-${index}`}
+              segment={segment}
+            />
           );
         }
         return null;
@@ -42,6 +53,7 @@ export const MessageAiResponse = memo(
   PureMessageAiResponse,
   (prevProps, nextProps) => {
     if (prevProps.content !== nextProps.content) return false;
+    if (prevProps.chatId !== nextProps.chatId) return false;
     // if (prevProps.message.id !== nextProps.message.id) return false;
     // if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
     // if (!equal(prevProps.vote, nextProps.vote)) return false;
@@ -50,7 +62,10 @@ export const MessageAiResponse = memo(
   },
 );
 
-const PureAiEditingBlock = ({ segment }: { segment: any }) => {
+const PureAiEditingBlock = ({
+  segment,
+  chatId,
+}: { segment: any; chatId: string }) => {
   const { setArtifact } = useArtifact();
 
   /* const handleContentChange = useCallback(
@@ -214,6 +229,7 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
 
 const AiEditingBlock = memo(PureAiEditingBlock, (prevProps, nextProps) => {
   if (!equal(prevProps.segment, nextProps.segment)) return false;
+  if (prevProps.chatId !== nextProps.chatId) return false;
 
   return true;
 });
