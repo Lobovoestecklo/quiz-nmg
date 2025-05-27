@@ -12,6 +12,11 @@ import { memo, useCallback } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
 import { useSWRConfig } from 'swr';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { Button } from './ui/button';
+import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { CopyIcon } from 'lucide-react';
 
 const PureMessageAiResponse = ({
   content,
@@ -212,9 +217,26 @@ const PureAiEditingBlock = ({
       >
         <div className="w-full p-4 flex justify-end items-center">
           <div className="absolute right-[9px] top-[13px] flex flex-row gap-2">
-            <div className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer">
-              Copy
-            </div>
+            <Tooltip key={'Копировать'}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn('h-fit dark:hover:bg-zinc-700 p-2')}
+                  onClick={() => {
+                    try {
+                      navigator.clipboard.writeText(segment.newFragment);
+                      toast.success('Скопировано!');
+                    } catch (error) {
+                      toast.error('Произошла ошибка! Попробуйте ещё раз.');
+                    }
+                  }}
+                  disabled={false}
+                >
+                  <CopyIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Копировать</TooltipContent>
+            </Tooltip>
             <div
               className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer"
               onClick={onApply}
