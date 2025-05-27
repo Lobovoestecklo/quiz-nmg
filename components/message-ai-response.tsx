@@ -137,15 +137,15 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
       </div>
       <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
         <div className="flex flex-row items-start sm:items-center gap-3">
-          <div className="text-muted-foreground">icon</div>
+          <div className="text-muted-foreground">{/* icon */}</div>
           <div className="-translate-y-1 sm:translate-y-0 font-medium">
-            title
+            {/* title */}
           </div>
         </div>
         <div className="w-8" />
       </div>
       <div className="border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700 p-4 sm:px-4 sm:py-4">
-        <Markdown>{segment.newFragment}</Markdown>
+        <Markdown>{`${'...\n'}${segment.newFragment}${'\n...'}`}</Markdown>
       </div>
     </div>
   );
