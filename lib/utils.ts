@@ -5,12 +5,13 @@ import type {
   TextStreamPart,
   ToolInvocation,
   ToolSet,
+  Attachment,
   UIMessage,
 } from 'ai';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { Document } from '@/lib/db/schema';
+import type { DBMessage, Document } from '@/lib/db/schema';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -299,6 +300,46 @@ export const getFirstMeaningfulLine = (
   return meaningfulLine.trim();
 };
 
+export function convertToUIMessages(
+  messages: Array<DBMessage>,
+): Array<UIMessage> {
+  return messages.map((message) => {
+    // Extract text from parts to use as content
+    let content = '';
+
+    // Find the first text part to use as content
+    if (Array.isArray(message.parts)) {
+      const textPart = message.parts.find(
+        (part) => part.type === 'text' && part.text,
+      );
+      const toolInvocationPart = message.parts.find(
+        (part) => part.type === 'tool-invocation' && part.toolInvocation,
+      );
+      if (textPart && textPart.text) {
+        content = textPart.text;
+      } else if (
+        toolInvocationPart &&
+        toolInvocationPart.toolInvocation?.result?.content &&
+        toolInvocationPart.toolInvocation?.result?.title
+      ) {
+        content = `${toolInvocationPart.toolInvocation.result.title}: ${toolInvocationPart.toolInvocation.result.content}`;
+      } else if (message.parts.length > 0) {
+        // Fallback: use a space to avoid empty content
+        content = ' ';
+      }
+    }
+
+    return {
+      id: message.id,
+      parts: message.parts as UIMessage['parts'],
+      role: message.role as UIMessage['role'],
+      content: content, // Use extracted content instead of empty string
+      createdAt: message.createdAt,
+      experimental_attachments:
+        (message.attachments as Array<Attachment>) ?? [],
+    };
+  });
+}
 interface FixedResult {
   start: number;
   end: number;
