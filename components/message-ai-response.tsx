@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  convertToUIMessages,
   findPreviousVersionFixed,
   getCustomScriptantinoFormat,
   getFirstMeaningfulLine,
@@ -10,6 +11,7 @@ import equal from 'fast-deep-equal';
 import { memo, useCallback } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
+import { useSWRConfig } from 'swr';
 
 const PureMessageAiResponse = ({
   content,
@@ -67,63 +69,65 @@ const PureAiEditingBlock = ({
   chatId,
 }: { segment: any; chatId: string }) => {
   const { setArtifact } = useArtifact();
+  const { mutate } = useSWRConfig();
 
-  /* const handleContentChange = useCallback(
-    (updatedContent: string, chatId: string, documentId: string) => {
-
+  const handleContentChange = useCallback(
+    async (
+      updatedContent: string,
+      chatId: string,
+      documentId: string,
+      title: string,
+      kind: string,
+      document: any,
+    ) => {
       mutate<Array<Document>>(
         `/api/document?id=${documentId}`,
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
-          const currentDocument = currentDocuments.at(-1);
+          const messagesResponse = await fetch(
+            `/api/chat/messages?chatId=${chatId}`,
+          );
+          const { messages: dbMessages } = await messagesResponse.json();
+          console.log({ dbMessages });
+          const messages = convertToUIMessages(dbMessages);
+          console.log({ messages });
 
-          if (!currentDocument || !currentDocument.content) {
-            setIsContentDirty(false);
-            return currentDocuments;
-          }
+          // const response = await fetch(
+          //   `/api/document/manual?id=${documentId}&chatId=${chatId}`,
+          //   {
+          //     method: 'PATCH',
+          //     body: JSON.stringify({
+          //       title: title,
+          //       content: updatedContent,
+          //       kind: kind,
+          //     }),
+          //   },
+          // );
 
-          if (currentDocument.content !== updatedContent) {
-            const response = await fetch(
-              `/api/document/manual?id=${artifact.documentId}&chatId=${chatId}`,
-              {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  title: artifact.title,
-                  content: updatedContent,
-                  kind: artifact.kind,
-                }),
-              },
-            );
+          // const result = await response.json();
 
-            const result = await response.json();
+          // if (result.savedMessage) {
+          //   setMessages([...messages, result.savedMessage]);
+          // }
 
-            if (result.savedMessage) {
-              setMessages([...messages, result.savedMessage]);
-            }
+          // const newDocument = {
+          //   ...document,
+          //   content: updatedContent,
+          //   createdAt: new Date(),
+          // };
 
-            setIsContentDirty(false);
-
-            const newDocument = {
-              ...currentDocument,
-              content: updatedContent,
-              createdAt: new Date(),
-            };
-
-            return [...currentDocuments, newDocument];
-          }
-          return currentDocuments;
+          return [...currentDocuments /* , newDocument */];
         },
         { revalidate: false },
       );
     },
-    [artifact, mutate, setMessages],
-  ); */
+    [mutate, /* setMessages, */ chatId],
+  );
 
-  const onApply = async () => {
+  const onApply = useCallback(async () => {
     console.log({ segment });
     // TODO: pass real chatId
-    const chatId = '1172794d-ec95-42f9-b36f-70cbb33f5cc9';
     try {
       const response = await fetch(
         `/api/document/chat-latest?chatId=${chatId}`,
@@ -167,6 +171,15 @@ const PureAiEditingBlock = ({
           segment.newFragment +
           document.content.slice(end);
         console.log({ newContent });
+
+        await handleContentChange(
+          newContent,
+          chatId,
+          document.documentId,
+          document.title,
+          document.kind,
+          document,
+        );
       }
 
       //   setArtifact({
@@ -189,7 +202,7 @@ const PureAiEditingBlock = ({
     } catch (error) {
       console.error('Error checking for documents:', error);
     }
-  };
+  }, [handleContentChange, chatId, segment]);
 
   return (
     <div className="relative">
