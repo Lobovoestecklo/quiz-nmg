@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { CopyIcon } from 'lucide-react';
+import { CopyIcon, PlayIcon } from 'lucide-react';
 
 const PureMessageAiResponse = ({
   content,
@@ -237,12 +237,26 @@ const PureAiEditingBlock = ({
               </TooltipTrigger>
               <TooltipContent>Копировать</TooltipContent>
             </Tooltip>
-            <div
-              className="p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100 cursor-pointer"
-              onClick={onApply}
-            >
-              Apply
-            </div>
+            <Tooltip key={'Применить'}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn('h-fit dark:hover:bg-zinc-700 py-1.5 px-2')}
+                  onClick={async () => {
+                    try {
+                      await onApply();
+                    } catch (error) {
+                      toast.error('Произошла ошибка! Попробуйте ещё раз.');
+                    }
+                  }}
+                  disabled={false}
+                >
+                  <PlayIcon />
+                  {'Применить'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Применить</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
