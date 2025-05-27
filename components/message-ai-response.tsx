@@ -7,7 +7,7 @@ import {
   parseModelResponse,
 } from '@/lib/utils';
 import equal from 'fast-deep-equal';
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
 
@@ -52,6 +52,59 @@ export const MessageAiResponse = memo(
 
 const PureAiEditingBlock = ({ segment }: { segment: any }) => {
   const { setArtifact } = useArtifact();
+
+  /* const handleContentChange = useCallback(
+    (updatedContent: string, chatId: string, documentId: string) => {
+
+      mutate<Array<Document>>(
+        `/api/document?id=${documentId}`,
+        async (currentDocuments) => {
+          if (!currentDocuments) return undefined;
+
+          const currentDocument = currentDocuments.at(-1);
+
+          if (!currentDocument || !currentDocument.content) {
+            setIsContentDirty(false);
+            return currentDocuments;
+          }
+
+          if (currentDocument.content !== updatedContent) {
+            const response = await fetch(
+              `/api/document/manual?id=${artifact.documentId}&chatId=${chatId}`,
+              {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  title: artifact.title,
+                  content: updatedContent,
+                  kind: artifact.kind,
+                }),
+              },
+            );
+
+            const result = await response.json();
+
+            if (result.savedMessage) {
+              setMessages([...messages, result.savedMessage]);
+            }
+
+            setIsContentDirty(false);
+
+            const newDocument = {
+              ...currentDocument,
+              content: updatedContent,
+              createdAt: new Date(),
+            };
+
+            return [...currentDocuments, newDocument];
+          }
+          return currentDocuments;
+        },
+        { revalidate: false },
+      );
+    },
+    [artifact, mutate, setMessages],
+  ); */
+
   const onApply = async () => {
     console.log({ segment });
     // TODO: pass real chatId
@@ -87,14 +140,18 @@ const PureAiEditingBlock = ({ segment }: { segment: any }) => {
       console.log('segment.previousVersion', segment.previousVersion);
 
       console.log({ previousVersionPositions });
-      if (previousVersionPositions) {
+      if (!previousVersionPositions) {
+        // TODO: show message
+      } else {
         const { start, end } = previousVersionPositions;
         const test = document.content.slice(start, end);
         console.log({ test });
-      }
 
-      if (!previousVersionPositions) {
-        // TODO: show message
+        const newContent =
+          document.content.slice(0, start) +
+          segment.newFragment +
+          document.content.slice(end);
+        console.log({ newContent });
       }
 
       //   setArtifact({
