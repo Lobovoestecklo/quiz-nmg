@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { CopyIcon, PlayIcon } from 'lucide-react';
+import { CopyIcon, PlayIcon, LetterTextIcon } from 'lucide-react';
 
 const PureMessageAiResponse = ({
   content,
@@ -262,7 +262,9 @@ const PureAiEditingBlock = ({
       </div>
       <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
         <div className="flex flex-row items-start sm:items-center gap-3">
-          <div className="text-muted-foreground">{/* icon */}</div>
+          <div className="text-muted-foreground">
+            <LetterTextIcon />
+          </div>
           <div className="-translate-y-1 sm:translate-y-0 font-medium">
             {/* title */}
           </div>
