@@ -8,7 +8,7 @@ import {
   parseModelResponse,
 } from '@/lib/utils';
 import equal from 'fast-deep-equal';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
 import { useSWRConfig } from 'swr';
@@ -17,6 +17,14 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { CopyIcon, PlayIcon, LetterTextIcon } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetClose,
+} from '@/components/ui/sheet';
 
 const PureMessageAiResponse = ({
   content,
@@ -75,6 +83,7 @@ const PureAiEditingBlock = ({
 }: { segment: any; chatId: string }) => {
   const { setArtifact } = useArtifact();
   const { mutate } = useSWRConfig();
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   const handleContentChange = useCallback(
     async (
@@ -242,12 +251,8 @@ const PureAiEditingBlock = ({
                 <Button
                   variant="outline"
                   className={cn('h-fit dark:hover:bg-zinc-700 py-1.5 px-2')}
-                  onClick={async () => {
-                    try {
-                      await onApply();
-                    } catch (error) {
-                      toast.error('Произошла ошибка! Попробуйте ещё раз.');
-                    }
+                  onClick={() => {
+                    setIsComparisonOpen(true);
                   }}
                   disabled={false}
                 >
@@ -274,6 +279,49 @@ const PureAiEditingBlock = ({
       <div className="border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700 p-4 sm:px-4 sm:py-4">
         <Markdown>{`${'...\n'}${segment.newFragment}${'\n...'}`}</Markdown>
       </div>
+
+      {/* Comparison Modal */}
+      <Sheet open={isComparisonOpen} onOpenChange={setIsComparisonOpen}>
+        <SheetContent side="bottom" className="h-[90vh] w-full max-w-none p-0">
+          <div className="h-full flex flex-col">
+            <div className="p-4 border-b">
+              <SheetHeader>
+                <SheetTitle>Сравнение изменений</SheetTitle>
+                <SheetDescription>
+                  Просмотрите изменения перед применением
+                </SheetDescription>
+              </SheetHeader>
+            </div>
+            <div className="flex-1 flex overflow-hidden">
+              <div className="w-1/2 border-r overflow-auto p-4">
+                <div className="font-medium mb-2 text-muted-foreground">
+                  Предыдущая версия
+                </div>
+                <Markdown>{segment.previousVersion}</Markdown>
+              </div>
+              <div className="w-1/2 overflow-auto p-4">
+                <div className="font-medium mb-2 text-muted-foreground">
+                  Новая версия
+                </div>
+                <Markdown>{segment.newFragment}</Markdown>
+              </div>
+            </div>
+            <div className="p-4 border-t flex justify-end gap-2">
+              <SheetClose asChild>
+                <Button variant="outline">Отмена</Button>
+              </SheetClose>
+              <Button
+                onClick={async () => {
+                  await onApply();
+                  setIsComparisonOpen(false);
+                }}
+              >
+                Применить изменения
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
