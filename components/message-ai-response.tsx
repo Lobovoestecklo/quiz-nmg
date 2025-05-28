@@ -257,7 +257,9 @@ const PureAiEditingBlock = ({
 
       //   console.log({ previousVersionPositions });
       if (!previousVersionPositions) {
-        // TODO: show message
+        toast(
+          'Не удалось найти место в сценарии для применения изменений. Пожалуйста, примените изменения в ручном режиме!',
+        );
       } else {
         const { start, end } = previousVersionPositions;
         const test = document.content.slice(start, end);
