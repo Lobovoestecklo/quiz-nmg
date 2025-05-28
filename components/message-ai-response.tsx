@@ -243,19 +243,19 @@ const PureAiEditingBlock = ({
 
       const { document } = data;
 
-      const textLineToScrollTo = getFirstMeaningfulLine(
-        segment.previousVersion,
-      );
-      console.log({ textLineToScrollTo });
+      //   const textLineToScrollTo = getFirstMeaningfulLine(
+      //     segment.previousVersion,
+      //   );
+      //   console.log({ textLineToScrollTo });
 
       const previousVersionPositions = findPreviousVersionFixed(
         document.content,
         segment.previousVersion,
       );
 
-      console.log('segment.previousVersion', segment.previousVersion);
+      //   console.log('segment.previousVersion', segment.previousVersion);
 
-      console.log({ previousVersionPositions });
+      //   console.log({ previousVersionPositions });
       if (!previousVersionPositions) {
         // TODO: show message
       } else {
