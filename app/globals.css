@@ -162,3 +162,24 @@
 .suggestion-highlight {
     @apply bg-blue-200 hover:bg-blue-300 dark:hover:bg-blue-400/50 dark:text-blue-50 dark:bg-blue-500/40;
 }
+
+.editing-block-streaming {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
+  margin: 1rem 0;
+}
+
+.previous-version-streaming {
+  padding: 0.5rem;
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+.new-fragment-streaming {
+  padding: 0.5rem;
+  font-weight: bold;
+  color: var(--primary);
+  background-color: rgba(var(--primary-rgb), 0.1);
+}

@@ -2,7 +2,7 @@
 
 import { exampleSetup } from 'prosemirror-example-setup';
 import { inputRules } from 'prosemirror-inputrules';
-import { EditorState } from 'prosemirror-state';
+import { EditorState, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { memo, useEffect, useRef } from 'react';
 
@@ -16,12 +16,14 @@ import {
   buildContentFromDocument,
   buildDocumentFromContent,
   createDecorations,
+  findTextPositionInDoc,
 } from '@/lib/editor/functions';
 import {
   projectWithPositions,
   suggestionsPlugin,
   suggestionsPluginKey,
 } from '@/lib/editor/suggestions';
+import { useArtifact } from '@/hooks/use-artifact';
 
 type EditorProps = {
   content: string;
@@ -42,6 +44,8 @@ function PureEditor({
 }: EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorView | null>(null);
+  const { artifact } = useArtifact();
+  const editingMetadata = artifact?.editingMetadata;
 
   useEffect(() => {
     if (containerRef.current && !editorRef.current) {
@@ -149,6 +153,66 @@ function PureEditor({
       editorRef.current.dispatch(transaction);
     }
   }, [suggestions, content]);
+
+  // Scroll to text effect
+  useEffect(() => {
+    if (
+      editorRef.current?.state.doc &&
+      content &&
+      editingMetadata?.scrollToText &&
+      status === 'idle' &&
+      artifact.isVisible
+    ) {
+      console.log({ editingMetadata });
+      const textToFindTest = editingMetadata?.scrollToText;
+      const textToFind = 'Ничего . Мне нравится';
+      const positions: any = findTextPositionInDoc(
+        editorRef.current.state.doc,
+        textToFind,
+      );
+
+      console.log({ positions });
+
+      if (positions) {
+        // Create a text selection at the found position
+        const selection = TextSelection.create(
+          editorRef.current.state.doc,
+          positions.start,
+          positions.end,
+        );
+
+        // Apply the selection
+        const transaction = editorRef.current.state.tr.setSelection(selection);
+        editorRef.current.dispatch(transaction);
+
+        setTimeout(() => {
+          if (editorRef.current) {
+            // Find the direct parent scroll container of the editor
+            // This should be within the artifact component
+            const editorContainer =
+              containerRef.current?.closest('.overflow-y-scroll');
+
+            if (editorContainer) {
+              // Get coordinates at the position
+              const coords = editorRef.current.coordsAtPos(positions.start);
+
+              // Calculate the top position relative to the editor container
+              const editorContainerRect =
+                editorContainer.getBoundingClientRect();
+              const topRelativeToContainer =
+                coords.top -
+                editorContainerRect.top +
+                editorContainer.scrollTop;
+
+              // Scroll only the editor container
+              editorContainer.scrollTop =
+                topRelativeToContainer - editorContainer.clientHeight / 2;
+            }
+          }
+        }, 100);
+      }
+    }
+  }, [content, editingMetadata, status, artifact.isVisible]);
 
   return (
     <div className="relative prose dark:prose-invert" ref={containerRef} />

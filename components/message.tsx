@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import { UseChatHelpers } from '@ai-sdk/react';
+import { MessageAiResponse } from './message-ai-response';
 
 const PurePreviewMessage = ({
   chatId,
@@ -96,6 +97,11 @@ const PurePreviewMessage = ({
 
               if (type === 'text') {
                 if (mode === 'view') {
+                  console.log({ part });
+                  console.log(
+                    'part.isEditingApplied',
+                    (part as any).isEditingApplied,
+                  );
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
                       {message.role === 'user' && !isReadonly && (
@@ -112,7 +118,7 @@ const PurePreviewMessage = ({
                               <PencilEditIcon />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit message</TooltipContent>
+                          <TooltipContent>Редактировать</TooltipContent>
                         </Tooltip>
                       )}
 
@@ -123,9 +129,18 @@ const PurePreviewMessage = ({
                             message.role === 'user',
                         })}
                       >
-                        <Markdown>
-                          {getCustomScriptantinoFormat(part.text)}
-                        </Markdown>
+                        {message.role === 'user' ? (
+                          <Markdown>
+                            {getCustomScriptantinoFormat(part.text)}
+                          </Markdown>
+                        ) : (
+                          <MessageAiResponse
+                            chatId={chatId}
+                            content={part.text}
+                            isStreaming={isLoading}
+                            isEditingApplied={(part as any).isEditingApplied}
+                          />
+                        )}
                       </div>
                     </div>
                   );
