@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       },
       {
         type: 'text',
-        text: `Сценарий ${title} успешно извлечен из pdf.`,
+        text: `Сценарий ${title} успешно извлечен из pdf. Желаете приступить к анализу?`,
       },
     ];
 

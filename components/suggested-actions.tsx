@@ -5,44 +5,19 @@ import { Button } from './ui/button';
 import { memo } from 'react';
 import { UseChatHelpers } from '@ai-sdk/react';
 
+interface SuggestedAction {
+  title: string;
+  label: string;
+  action: string;
+}
+
 interface SuggestedActionsProps {
   chatId: string;
   append: UseChatHelpers['append'];
 }
 
 function PureSuggestedActions({ chatId, append }: SuggestedActionsProps) {
-  const suggestedActions = [
-    {
-      title: 'У меня уже есть сценарий',
-      label: 'и я хочу его улучшить',
-      action: 'У меня уже есть сценарий и я хочу его улучшить',
-    },
-    {
-      title: 'У меня нет сценария',
-      label: 'я создаю все с нуля',
-      action: 'У меня нет сценария, я создаю все с нуля',
-    }
-   /* {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
-    },
-    {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
-    },
-    {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
-    },
-    {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
-    }, */
-  ];
+  const suggestedActions: SuggestedAction[] = [];
 
   return (
     <div
