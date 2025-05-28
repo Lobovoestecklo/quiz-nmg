@@ -48,13 +48,18 @@ export async function GET(request: Request) {
   }
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(request: Request) {
   try {
-    const { id } = params;
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
     const session = await auth();
+
+    if (!id) {
+      return Response.json(
+        { error: 'Message ID is required' },
+        { status: 400 },
+      );
+    }
 
     if (!session?.user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });

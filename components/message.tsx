@@ -139,6 +139,8 @@ const PurePreviewMessage = ({
                             content={part.text}
                             isStreaming={isLoading}
                             isEditingApplied={(part as any).isEditingApplied}
+                            message={message}
+                            setMessages={setMessages}
                           />
                         )}
                       </div>
