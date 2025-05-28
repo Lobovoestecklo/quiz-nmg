@@ -8,7 +8,7 @@ import {
   parseModelResponse,
 } from '@/lib/utils';
 import equal from 'fast-deep-equal';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useState, useMemo } from 'react';
 import { Markdown } from './markdown';
 import { useArtifact } from '@/hooks/use-artifact';
 import { useSWRConfig } from 'swr';
@@ -26,16 +26,75 @@ import {
   SheetClose,
 } from '@/components/ui/sheet';
 
+// This parses streaming content the same way as parseModelResponse
+const parseStreamingContent = (content: string) => {
+  if (!content || typeof content !== 'string')
+    return [{ type: 'text', content: '' }];
+
+  // Initialize segments array
+  const segments = [];
+  let remainingText = content;
+
+  // Parse <редактирование> blocks
+  const editingRegex = /<редактирование>([\s\S]*?)(<\/редактирование>|$)/g;
+  let editingMatch;
+
+  while ((editingMatch = editingRegex.exec(content)) !== null) {
+    // Add text before the match
+    const beforeText = remainingText.substring(0, editingMatch.index);
+    if (beforeText) segments.push({ type: 'text', content: beforeText });
+
+    // Extract the editing content
+    const editingContent = editingMatch[1];
+
+    // Parse previousVersion and newFragment
+    const previousVersionMatch =
+      /<предыдущая_версия>([\s\S]*?)(<\/предыдущая_версия>|$)/g.exec(
+        editingContent,
+      );
+    const newFragmentMatch =
+      /<новый_фрагмент>([\s\S]*?)(<\/новый_фрагмент>|$)/g.exec(editingContent);
+
+    segments.push({
+      type: 'editing',
+      previousVersion: previousVersionMatch ? previousVersionMatch[1] : '',
+      newFragment: newFragmentMatch ? newFragmentMatch[1] : '',
+    });
+
+    // Update remaining text - only if we have a closing tag
+    if (editingMatch[2] === '</редактирование>') {
+      remainingText = remainingText.substring(
+        editingMatch.index + editingMatch[0].length,
+      );
+    } else {
+      // If there's no closing tag, we've processed all content
+      remainingText = '';
+      break;
+    }
+  }
+
+  // Add any remaining text
+  if (remainingText) segments.push({ type: 'text', content: remainingText });
+
+  return segments;
+};
+
 const PureMessageAiResponse = ({
   content,
   chatId,
+  isStreaming = false,
 }: {
   content: string;
   chatId: string;
+  isStreaming?: boolean;
 }) => {
-  const segments = parseModelResponse(content);
-  console.log({ segments });
-  console.log({ chatId });
+  // Use different parsing based on streaming state
+  const segments = useMemo(() => {
+    return isStreaming
+      ? parseStreamingContent(content)
+      : parseModelResponse(content);
+  }, [content, isStreaming]);
+
   if (!segments || segments.length === 0) {
     return <Markdown>{content}</Markdown>;
   }
@@ -50,6 +109,28 @@ const PureMessageAiResponse = ({
             </Markdown>
           );
         } else if (segment.type === 'editing') {
+          // For streaming, render a simplified version of AiEditingBlock
+          if (isStreaming) {
+            return (
+              <div key={`ai-response-${index}`} className="relative">
+                <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
+                  <div className="flex flex-row items-start sm:items-center gap-3">
+                    <div className="text-muted-foreground">
+                      <LetterTextIcon />
+                    </div>
+                    <div className="-translate-y-1 sm:translate-y-0 font-medium">
+                      {/* title */}
+                    </div>
+                  </div>
+                </div>
+                <div className="border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700 p-4 sm:px-4 sm:py-4">
+                  <Markdown>{`${'...\n'}${segment.newFragment}${'\n...'}`}</Markdown>
+                </div>
+              </div>
+            );
+          }
+
+          // For completed responses, use the full component
           return (
             <AiEditingBlock
               chatId={chatId}
@@ -69,10 +150,7 @@ export const MessageAiResponse = memo(
   (prevProps, nextProps) => {
     if (prevProps.content !== nextProps.content) return false;
     if (prevProps.chatId !== nextProps.chatId) return false;
-    // if (prevProps.message.id !== nextProps.message.id) return false;
-    // if (!equal(prevProps.message.parts, nextProps.message.parts)) return false;
-    // if (!equal(prevProps.vote, nextProps.vote)) return false;
-
+    if (prevProps.isStreaming !== nextProps.isStreaming) return false;
     return true;
   },
 );

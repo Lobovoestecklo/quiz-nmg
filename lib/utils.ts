@@ -267,6 +267,57 @@ export function parseModelResponse(text: any) {
   return segments;
 }
 
+// This is a simpler parser specifically for streaming content
+export const parseStreamingContent = (content: string) => {
+  // Replace any unclosed tags with temporary placeholders
+  let processedContent = content;
+
+  // Handle <редактирование> blocks that might be incomplete
+  const openEditingTags = (processedContent.match(/<редактирование>/g) || [])
+    .length;
+  const closeEditingTags = (processedContent.match(/<\/редактирование>/g) || [])
+    .length;
+
+  if (openEditingTags > closeEditingTags) {
+    // There's an unclosed <редактирование> tag
+    processedContent = processedContent.replace(
+      /<редактирование>([\s\S]*)$/,
+      '<div class="editing-block-streaming">$1</div>',
+    );
+  }
+
+  // Handle <предыдущая_версия> blocks
+  const openPrevTags = (processedContent.match(/<предыдущая_версия>/g) || [])
+    .length;
+  const closePrevTags = (processedContent.match(/<\/предыдущая_версия>/g) || [])
+    .length;
+
+  if (openPrevTags > closePrevTags) {
+    // There's an unclosed <предыдущая_версия> tag
+    processedContent = processedContent.replace(
+      /<предыдущая_версия>([\s\S]*)$/,
+      '<div class="previous-version-streaming">$1</div>',
+    );
+  }
+
+  // Handle <новый_фрагмент> blocks
+  const openNewTags = (processedContent.match(/<новый_фрагмент>/g) || [])
+    .length;
+  const closeNewTags = (processedContent.match(/<\/новый_фрагмент>/g) || [])
+    .length;
+
+  if (openNewTags > closeNewTags) {
+    // There's an unclosed <новый_фрагмент> tag
+    processedContent = processedContent.replace(
+      /<новый_фрагмент>([\s\S]*)$/,
+      '<div class="new-fragment-streaming">$1</div>',
+    );
+  }
+
+  // Apply the custom formatting to the processed content
+  return getCustomScriptantinoFormat(processedContent);
+};
+
 /**
  * Extracts the first meaningful line of text from content
  * @param content The document content to extract from

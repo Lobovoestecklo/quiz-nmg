@@ -132,6 +132,7 @@ const PurePreviewMessage = ({
                           <MessageAiResponse
                             chatId={chatId}
                             content={part.text}
+                            isStreaming={isLoading}
                           />
                         )}
                       </div>
