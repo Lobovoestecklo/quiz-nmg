@@ -214,7 +214,6 @@ const PureAiEditingBlock = ({
           const result = await response.json();
 
           if (message && message.id) {
-            console.log({ message });
             const updatedParts = message.parts.map((part: any) => {
               if (
                 part?.text?.includes('<редактирование>') &&
@@ -285,7 +284,6 @@ const PureAiEditingBlock = ({
   );
 
   const onApply = useCallback(async () => {
-    console.log({ segment });
     // TODO: pass real chatId
     try {
       const response = await fetch(
@@ -299,7 +297,6 @@ const PureAiEditingBlock = ({
       }
 
       const data = await response.json();
-      console.log({ data });
 
       if (!data.found) {
         toast.error(
@@ -330,13 +327,11 @@ const PureAiEditingBlock = ({
       } else {
         const { start, end } = previousVersionPositions;
         const test = document.content.slice(start, end);
-        console.log({ test });
 
         const newContent =
           document.content.slice(0, start) +
           segment.newFragment +
           document.content.slice(end);
-        console.log({ newContent });
 
         await handleContentChange(
           newContent,

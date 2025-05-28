@@ -163,15 +163,12 @@ function PureEditor({
       status === 'idle' &&
       artifact.isVisible
     ) {
-      console.log({ editingMetadata });
       const textToFindTest = editingMetadata?.scrollToText;
       const textToFind = 'Ничего . Мне нравится';
       const positions: any = findTextPositionInDoc(
         editorRef.current.state.doc,
         textToFind,
       );
-
-      console.log({ positions });
 
       if (positions) {
         // Create a text selection at the found position

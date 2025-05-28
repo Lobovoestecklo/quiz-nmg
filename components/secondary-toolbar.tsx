@@ -89,8 +89,6 @@ const SecondaryTool = ({
       setSelectedTool(description);
     } else {
       setSelectedTool(null);
-      console.log('clicked');
-      console.log('CLICKED CONTENT', content);
       if (content !== null) {
         onClick({
           content,
