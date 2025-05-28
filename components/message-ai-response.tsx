@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { CopyIcon, PlayIcon, LetterTextIcon } from 'lucide-react';
+import { CopyIcon, PlayIcon, LetterTextIcon, CheckIcon } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -83,10 +83,12 @@ const PureMessageAiResponse = ({
   content,
   chatId,
   isStreaming = false,
+  isEditingApplied = false,
 }: {
   content: string;
   chatId: string;
   isStreaming?: boolean;
+  isEditingApplied?: boolean;
 }) => {
   // Use different parsing based on streaming state
   const segments = useMemo(() => {
@@ -136,6 +138,7 @@ const PureMessageAiResponse = ({
               chatId={chatId}
               key={`ai-response-${index}`}
               segment={segment}
+              isEditingApplied={isEditingApplied}
             />
           );
         }
@@ -151,6 +154,7 @@ export const MessageAiResponse = memo(
     if (prevProps.content !== nextProps.content) return false;
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.isStreaming !== nextProps.isStreaming) return false;
+    if (prevProps.isEditingApplied !== nextProps.isEditingApplied) return false;
     return true;
   },
 );
@@ -158,7 +162,8 @@ export const MessageAiResponse = memo(
 const PureAiEditingBlock = ({
   segment,
   chatId,
-}: { segment: any; chatId: string }) => {
+  isEditingApplied = false,
+}: { segment: any; chatId: string; isEditingApplied?: boolean }) => {
   const { setArtifact } = useArtifact();
   const { mutate } = useSWRConfig();
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
@@ -324,22 +329,38 @@ const PureAiEditingBlock = ({
               </TooltipTrigger>
               <TooltipContent>Копировать</TooltipContent>
             </Tooltip>
-            <Tooltip key={'Применить'}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('h-fit dark:hover:bg-zinc-700 py-1.5 px-2')}
-                  onClick={() => {
-                    setIsComparisonOpen(true);
-                  }}
-                  disabled={false}
-                >
-                  <PlayIcon />
-                  {'Применить'}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Применить</TooltipContent>
-            </Tooltip>
+            {!isEditingApplied ? (
+              <Tooltip key={'Применить'}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn('h-fit dark:hover:bg-zinc-700 py-1.5 px-2')}
+                    onClick={() => {
+                      setIsComparisonOpen(true);
+                    }}
+                    disabled={false}
+                  >
+                    <PlayIcon />
+                    {'Применить'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Применить</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Tooltip key={'Применено'}>
+                <TooltipTrigger asChild>
+                  <Button
+                    disabled
+                    variant="outline"
+                    className={cn('h-fit dark:hover:bg-zinc-700 py-1.5 px-2')}
+                  >
+                    <CheckIcon />
+                    {'Применено'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Применено</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
       </div>
@@ -407,6 +428,6 @@ const PureAiEditingBlock = ({
 const AiEditingBlock = memo(PureAiEditingBlock, (prevProps, nextProps) => {
   if (!equal(prevProps.segment, nextProps.segment)) return false;
   if (prevProps.chatId !== nextProps.chatId) return false;
-
+  if (prevProps.isEditingApplied !== nextProps.isEditingApplied) return false;
   return true;
 });
