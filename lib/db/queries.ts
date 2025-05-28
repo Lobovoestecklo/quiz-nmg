@@ -429,3 +429,18 @@ export async function checkChatHasDocuments({
     throw error;
   }
 }
+
+export async function updateMessage({
+  id,
+  parts,
+}: {
+  id: string;
+  parts: any[];
+}) {
+  return db
+    .update(message)
+    .set({ parts })
+    .where(eq(message.id, id))
+    .returning()
+    .then((results) => results[0]);
+}
