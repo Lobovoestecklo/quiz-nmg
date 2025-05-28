@@ -247,6 +247,7 @@ const PureAiEditingBlock = ({
 
       const { document } = data;
 
+      // keep this for future use
       //   const textLineToScrollTo = getFirstMeaningfulLine(
       //     segment.previousVersion,
       //   );
