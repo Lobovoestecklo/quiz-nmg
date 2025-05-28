@@ -231,14 +231,18 @@ const PureAiEditingBlock = ({
       );
 
       if (!response.ok) {
-        // TODO: show message
+        toast.error(
+          'Не удалось найти сценарий! Проверьте, что сценарий существует в данном чате..',
+        );
       }
 
       const data = await response.json();
       console.log({ data });
 
       if (!data.found) {
-        // TODO: show message
+        toast.error(
+          'Не удалось найти сценарий! Проверьте, что сценарий существует в данном чате!',
+        );
       }
 
       const { document } = data;
