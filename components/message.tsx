@@ -97,11 +97,6 @@ const PurePreviewMessage = ({
 
               if (type === 'text') {
                 if (mode === 'view') {
-                  console.log({ part });
-                  console.log(
-                    'part.isEditingApplied',
-                    (part as any).isEditingApplied,
-                  );
                   return (
                     <div key={key} className="flex flex-row gap-2 items-start">
                       {message.role === 'user' && !isReadonly && (
@@ -139,6 +134,8 @@ const PurePreviewMessage = ({
                             content={part.text}
                             isStreaming={isLoading}
                             isEditingApplied={(part as any).isEditingApplied}
+                            message={message}
+                            setMessages={setMessages}
                           />
                         )}
                       </div>

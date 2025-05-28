@@ -25,6 +25,7 @@ import {
   SheetDescription,
   SheetClose,
 } from '@/components/ui/sheet';
+import { UseChatHelpers } from '@ai-sdk/react';
 
 // This parses streaming content the same way as parseModelResponse
 const parseStreamingContent = (content: string) => {
@@ -84,11 +85,15 @@ const PureMessageAiResponse = ({
   chatId,
   isStreaming = false,
   isEditingApplied = false,
+  setMessages,
+  message,
 }: {
   content: string;
   chatId: string;
   isStreaming?: boolean;
   isEditingApplied?: boolean;
+  setMessages: UseChatHelpers['setMessages'];
+  message: any;
 }) => {
   // Use different parsing based on streaming state
   const segments = useMemo(() => {
@@ -139,6 +144,8 @@ const PureMessageAiResponse = ({
               key={`ai-response-${index}`}
               segment={segment}
               isEditingApplied={isEditingApplied}
+              setMessages={setMessages}
+              message={message}
             />
           );
         }
@@ -155,6 +162,8 @@ export const MessageAiResponse = memo(
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.isStreaming !== nextProps.isStreaming) return false;
     if (prevProps.isEditingApplied !== nextProps.isEditingApplied) return false;
+    if (prevProps.message !== nextProps.message) return false;
+    if (prevProps.setMessages !== nextProps.setMessages) return false;
     return true;
   },
 );
@@ -163,7 +172,15 @@ const PureAiEditingBlock = ({
   segment,
   chatId,
   isEditingApplied = false,
-}: { segment: any; chatId: string; isEditingApplied?: boolean }) => {
+  setMessages,
+  message,
+}: {
+  segment: any;
+  chatId: string;
+  isEditingApplied?: boolean;
+  setMessages: UseChatHelpers['setMessages'];
+  message: any;
+}) => {
   const { setArtifact } = useArtifact();
   const { mutate } = useSWRConfig();
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
@@ -182,48 +199,91 @@ const PureAiEditingBlock = ({
         async (currentDocuments) => {
           if (!currentDocuments) return undefined;
 
-          const messagesResponse = await fetch(
-            `/api/chat/messages?chatId=${chatId}`,
+          const response = await fetch(
+            `/api/document/manual?id=${documentId}&chatId=${chatId}`,
+            {
+              method: 'PATCH',
+              body: JSON.stringify({
+                title: title,
+                content: updatedContent,
+                kind: kind,
+              }),
+            },
           );
-          const { messages: dbMessages } = await messagesResponse.json();
-          console.log({ dbMessages });
-          const messages = convertToUIMessages(dbMessages);
-          console.log({ messages });
 
-          // const response = await fetch(
-          //   `/api/document/manual?id=${documentId}&chatId=${chatId}`,
-          //   {
-          //     method: 'PATCH',
-          //     body: JSON.stringify({
-          //       title: title,
-          //       content: updatedContent,
-          //       kind: kind,
-          //     }),
-          //   },
-          // );
+          const result = await response.json();
 
-          // const result = await response.json();
+          if (message && message.id) {
+            const updatedParts = message.parts.map((part: any) => {
+              if (
+                part?.text?.includes('<редактирование>') &&
+                part?.text?.includes('<новый_фрагмент>')
+              ) {
+                return {
+                  ...part,
+                  isEditingApplied: true,
+                };
+              }
+              return part;
+            });
 
-          // if (result.savedMessage) {
-          //   setMessages([...messages, result.savedMessage]);
-          // }
+            try {
+              const updateResponse = await fetch(
+                `/api/chat/messages?id=${message.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ parts: updatedParts }),
+                },
+              );
 
-          // const newDocument = {
-          //   ...document,
-          //   content: updatedContent,
-          //   createdAt: new Date(),
-          // };
+              if (!updateResponse.ok) {
+                throw new Error('Failed to update message');
+              }
 
-          return [...currentDocuments /* , newDocument */];
+              setMessages((prevMessages) => {
+                return prevMessages.map((msg) => {
+                  if (msg.id === message.id) {
+                    return {
+                      ...msg,
+                      parts: updatedParts,
+                    };
+                  }
+                  return msg;
+                });
+              });
+            } catch (error) {
+              console.error(
+                'Failed to update message with isEditingApplied flag:',
+                error,
+              );
+            }
+          }
+
+          if (result.savedMessage) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              result.savedMessage,
+            ]);
+          }
+
+          const newDocument = {
+            ...document,
+            content: updatedContent,
+            createdAt: new Date(),
+          };
+
+          return [...currentDocuments, newDocument];
         },
         { revalidate: false },
       );
     },
-    [mutate, /* setMessages, */ chatId],
+    [mutate, setMessages, chatId, segment, message],
   );
 
   const onApply = useCallback(async () => {
-    console.log({ segment });
     // TODO: pass real chatId
     try {
       const response = await fetch(
@@ -237,7 +297,6 @@ const PureAiEditingBlock = ({
       }
 
       const data = await response.json();
-      console.log({ data });
 
       if (!data.found) {
         toast.error(
@@ -268,13 +327,11 @@ const PureAiEditingBlock = ({
       } else {
         const { start, end } = previousVersionPositions;
         const test = document.content.slice(start, end);
-        console.log({ test });
 
         const newContent =
           document.content.slice(0, start) +
           segment.newFragment +
           document.content.slice(end);
-        console.log({ newContent });
 
         await handleContentChange(
           newContent,
@@ -436,5 +493,7 @@ const AiEditingBlock = memo(PureAiEditingBlock, (prevProps, nextProps) => {
   if (!equal(prevProps.segment, nextProps.segment)) return false;
   if (prevProps.chatId !== nextProps.chatId) return false;
   if (prevProps.isEditingApplied !== nextProps.isEditingApplied) return false;
+  if (prevProps.setMessages !== nextProps.setMessages) return false;
+  if (prevProps.message !== nextProps.message) return false;
   return true;
 });
