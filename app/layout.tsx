@@ -10,8 +10,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   // metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Scriptantino',
-  description: 'Scriptantino',
+  title: 'Marker',
+  description: 'Marker',
 };
 
 export const viewport = {

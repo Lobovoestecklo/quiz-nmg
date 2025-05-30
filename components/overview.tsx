@@ -15,7 +15,8 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p>
-          Привет! Я Scriptantino и я помогу тебе улучшить твой сценарий. Расскажи мне о твоем сценарии, и я помогу тебе с ним.
+          Привет! Я Markerator и я помогу тебе улучшить твой сценарий. Расскажи
+          мне о твоем сценарии, и я помогу тебе с ним.
         </p>
       </div>
     </motion.div>
