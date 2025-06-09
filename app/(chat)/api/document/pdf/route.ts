@@ -98,18 +98,18 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        chatId,
-        documentId,
-        messageId,
+        id: documentId,
+        title,
+        kind: 'text',
+        content,
         savedMessage,
         isNewChat,
+        chatId,
       },
       { status: 200 },
     );
   } catch (error) {
-    console.error('Failed to create scenario:', error);
-    return new Response('Произошла ошибка при создании сценария', {
-      status: 500,
-    });
+    console.error('Error saving document:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
 }

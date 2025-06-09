@@ -366,102 +366,126 @@ function PureAttachmentsButton({
 
   const handlePdfFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (
-        !file ||
-        (file.type !== PDF_MIME_TYPE &&
-          !file.name.toLowerCase().endsWith(PDF_EXTENSION))
-      ) {
-        toast.error('Пожалуйста, выберите PDF файл.');
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) return;
+
+      // Validate all files are PDFs
+      const invalidFiles = files.filter(
+        (file) =>
+          file.type !== PDF_MIME_TYPE &&
+          !file.name.toLowerCase().endsWith(PDF_EXTENSION),
+      );
+
+      if (invalidFiles.length > 0) {
+        toast.error('Пожалуйста, выберите только PDF файлы.');
         if (event.target) event.target.value = '';
         return;
       }
+
       if (event.target) event.target.value = '';
 
       const loadingToastId = toast.loading(
-        `Извлечение текста из ${file.name}...`,
+        `Извлечение текста из ${files.length} PDF файлов...`,
       );
 
-      let extractedText: string | null = null;
       try {
-        extractedText = await extractTextFromPdf(file);
-      } catch (error) {
-        console.error('PDF Parsing error:', error);
-        toast.error(
-          `Ошибка извлечения текста: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
-          { id: loadingToastId },
-        );
-        return;
-      }
-
-      if (extractedText === null || extractedText.trim() === '') {
-        toast.error(
-          'Не удалось извлечь текст из этого PDF файла. Возможно, он содержит только изображения или текст нераспознаваем.',
-          { id: loadingToastId },
-        );
-        return;
-      }
-
-      toast.loading('Сохранение документа... ', { id: loadingToastId });
-      const apiUrl = `/api/document/pdf?chatId=${chatId}`;
-      const requestBody = {
-        chatId,
-        content: extractedText,
-        title: file.name || 'Загруженный PDF',
-      };
-
-      try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          let errorData = {};
+        // Process all files in sequence
+        for (const file of files) {
+          let extractedText: string | null = null;
           try {
-            errorData = await response.json();
-          } catch (jsonError) {
-            console.error(
-              'Failed to parse API error response as JSON',
-              jsonError,
+            extractedText = await extractTextFromPdf(file);
+          } catch (error) {
+            console.error('PDF Parsing error:', error);
+            toast.error(
+              `Ошибка извлечения текста из ${file.name}: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
+              { id: loadingToastId },
             );
-            errorData = {
-              error: `Request failed with status ${response.status}`,
-            };
+            continue;
           }
-          throw new Error(
-            (errorData as any)?.error ||
-              `Failed to create document (${response.status})`,
-          );
-        }
 
-        const result = await response.json();
-
-        if (result.savedMessage) {
-          if (result.isNewChat) {
-            toast.success('Сценарий успешно создан', {
-              id: loadingToastId,
-            });
-            router.push(`/chat/${result.chatId}`);
-          } else {
-            setMessages([...messages, result.savedMessage]);
-            toast.success('Документ успешно создан и добавлен в чат.', {
-              id: loadingToastId,
-            });
+          if (extractedText === null || extractedText.trim() === '') {
+            toast.error(
+              `Не удалось извлечь текст из ${file.name}. Возможно, он содержит только изображения или текст нераспознаваем.`,
+              { id: loadingToastId },
+            );
+            continue;
           }
-        } else {
-          toast.success('Документ успешно создан (но не добавлен в чат).', {
+
+          toast.loading(`Сохранение документа ${file.name}...`, {
             id: loadingToastId,
           });
+          const apiUrl = `/api/document/pdf?chatId=${chatId}`;
+          const requestBody = {
+            chatId,
+            content: extractedText,
+            title: file.name || 'Загруженный PDF',
+          };
+
+          try {
+            const response = await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+              let errorData = {};
+              try {
+                errorData = await response.json();
+              } catch (jsonError) {
+                console.error(
+                  'Failed to parse API error response as JSON',
+                  jsonError,
+                );
+                errorData = {
+                  error: `Request failed with status ${response.status}`,
+                };
+              }
+              throw new Error(
+                (errorData as any)?.error ||
+                  `Failed to create document (${response.status})`,
+              );
+            }
+
+            const result = await response.json();
+
+            if (result.savedMessage) {
+              if (result.isNewChat) {
+                toast.success('Сценарий успешно создан', {
+                  id: loadingToastId,
+                });
+                router.push(`/chat/${result.chatId}`);
+              } else {
+                setMessages([...messages, result.savedMessage]);
+                toast.success(
+                  `Документ ${file.name} успешно создан и добавлен в чат.`,
+                  {
+                    id: loadingToastId,
+                  },
+                );
+              }
+            } else {
+              toast.success(
+                `Документ ${file.name} успешно создан (но не добавлен в чат).`,
+                {
+                  id: loadingToastId,
+                },
+              );
+            }
+          } catch (error: any) {
+            console.error('Document Creation/API Fetch Error:', error);
+            toast.error(
+              `Ошибка сохранения документа ${file.name}: ${error.message}`,
+              {
+                id: loadingToastId,
+              },
+            );
+          }
         }
-      } catch (error: any) {
-        console.error('Document Creation/API Fetch Error:', error);
-        toast.error(`Ошибка сохранения документа: ${error.message}`, {
-          id: loadingToastId,
-        });
+      } finally {
+        toast.dismiss(loadingToastId);
       }
     },
     [chatId, setMessages, messages],
@@ -497,7 +521,7 @@ function PureAttachmentsButton({
         className="hidden"
         accept={PDF_MIME_TYPE + ',' + PDF_EXTENSION}
         onChange={handlePdfFileChange}
-        multiple={false}
+        multiple={true}
         tabIndex={-1}
       />
 
