@@ -17,8 +17,15 @@ import {
 import { toast } from 'sonner';
 import { useLocalStorage, useWindowSize } from 'usehooks-ts';
 import { cn, generateUUID } from '@/lib/utils';
-import { PDF_MIME_TYPE, PDF_EXTENSION } from '@/lib/constants';
-import { extractTextFromPdf } from '@/lib/utils/pdf-parser';
+import {
+  SUPPORTED_DOCUMENT_TYPES,
+  SUPPORTED_DOCUMENT_EXTENSIONS,
+} from '@/lib/constants';
+import {
+  extractTextFromDocument,
+  isSupportedDocumentFormat,
+  getFileTypeDescription,
+} from '@/lib/utils/document-parser';
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from './icons';
 import { PreviewAttachment } from './preview-attachment';
@@ -369,15 +376,15 @@ function PureAttachmentsButton({
       const files = Array.from(event.target.files || []);
       if (files.length === 0) return;
 
-      // Validate all files are PDFs
+      // Validate all files are supported document formats
       const invalidFiles = files.filter(
-        (file) =>
-          file.type !== PDF_MIME_TYPE &&
-          !file.name.toLowerCase().endsWith(PDF_EXTENSION),
+        (file) => !isSupportedDocumentFormat(file),
       );
 
       if (invalidFiles.length > 0) {
-        toast.error('Пожалуйста, выберите только PDF файлы.');
+        toast.error(
+          'Пожалуйста, выберите только поддерживаемые документы (PDF, DOCX, DOC, TXT).',
+        );
         if (event.target) event.target.value = '';
         return;
       }
@@ -385,7 +392,7 @@ function PureAttachmentsButton({
       if (event.target) event.target.value = '';
 
       const loadingToastId = toast.loading(
-        `Извлечение текста из ${files.length} PDF файлов...`,
+        `Извлечение текста из ${files.length} документов...`,
       );
 
       try {
@@ -393,9 +400,9 @@ function PureAttachmentsButton({
         for (const file of files) {
           let extractedText: string | null = null;
           try {
-            extractedText = await extractTextFromPdf(file);
+            extractedText = await extractTextFromDocument(file);
           } catch (error) {
-            console.error('PDF Parsing error:', error);
+            console.error('Document Parsing error:', error);
             toast.error(
               `Ошибка извлечения текста из ${file.name}: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`,
               { id: loadingToastId },
@@ -414,11 +421,11 @@ function PureAttachmentsButton({
           toast.loading(`Сохранение документа ${file.name}...`, {
             id: loadingToastId,
           });
-          const apiUrl = `/api/document/pdf?chatId=${chatId}`;
+          const apiUrl = `/api/document/document?chatId=${chatId}`;
           const requestBody = {
             chatId,
             content: extractedText,
-            title: file.name || 'Загруженный PDF',
+            title: file.name || getFileTypeDescription(file),
           };
 
           try {
@@ -519,7 +526,10 @@ function PureAttachmentsButton({
         type="file"
         ref={pdfInputRef}
         className="hidden"
-        accept={PDF_MIME_TYPE + ',' + PDF_EXTENSION}
+        accept={[
+          ...SUPPORTED_DOCUMENT_TYPES,
+          ...SUPPORTED_DOCUMENT_EXTENSIONS,
+        ].join(',')}
         onChange={handlePdfFileChange}
         multiple={true}
         tabIndex={-1}
@@ -583,7 +593,7 @@ function PureAttachmentsButton({
                 <div>
                   {hasDocuments
                     ? 'В этом чате уже есть документы'
-                    : 'Вставить сценарий из pdf файла'}
+                    : 'Вставить сценарий из документа'}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {hasDocuments ? '' : 'Текст будет извлечен'}
