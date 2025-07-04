@@ -397,6 +397,10 @@ function PureAttachmentsButton({
 
       try {
         // Process all files in sequence
+        const savedMessages: any[] = [];
+        let isNewChat = false;
+        let newChatId = chatId;
+
         for (const file of files) {
           let extractedText: string | null = null;
           try {
@@ -421,9 +425,9 @@ function PureAttachmentsButton({
           toast.loading(`Сохранение документа ${file.name}...`, {
             id: loadingToastId,
           });
-          const apiUrl = `/api/document/document?chatId=${chatId}`;
+          const apiUrl = `/api/document/document?chatId=${newChatId}`;
           const requestBody = {
-            chatId,
+            chatId: newChatId,
             content: extractedText,
             title: file.name || getFileTypeDescription(file),
           };
@@ -460,26 +464,10 @@ function PureAttachmentsButton({
 
             if (result.savedMessage) {
               if (result.isNewChat) {
-                toast.success('Сценарий успешно создан', {
-                  id: loadingToastId,
-                });
-                router.push(`/chat/${result.chatId}`);
-              } else {
-                setMessages([...messages, result.savedMessage]);
-                toast.success(
-                  `Документ ${file.name} успешно создан и добавлен в чат.`,
-                  {
-                    id: loadingToastId,
-                  },
-                );
+                isNewChat = true;
+                newChatId = result.chatId;
               }
-            } else {
-              toast.success(
-                `Документ ${file.name} успешно создан (но не добавлен в чат).`,
-                {
-                  id: loadingToastId,
-                },
-              );
+              savedMessages.push(result.savedMessage);
             }
           } catch (error: any) {
             console.error('Document Creation/API Fetch Error:', error);
@@ -491,11 +479,29 @@ function PureAttachmentsButton({
             );
           }
         }
+
+        // Add all saved messages to chat at once
+        if (savedMessages.length > 0) {
+          if (isNewChat) {
+            toast.success('Сценарии успешно созданы', {
+              id: loadingToastId,
+            });
+            router.push(`/chat/${newChatId}`);
+          } else {
+            setMessages([...messages, ...savedMessages]);
+            toast.success(
+              `${savedMessages.length} документов успешно созданы и добавлены в чат.`,
+              {
+                id: loadingToastId,
+              },
+            );
+          }
+        }
       } finally {
         toast.dismiss(loadingToastId);
       }
     },
-    [chatId, setMessages, messages],
+    [chatId, setMessages, messages, router],
   );
 
   // Check if documents exist for this chat
