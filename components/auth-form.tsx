@@ -7,68 +7,76 @@ export function AuthForm({
   action,
   children,
   defaultEmail = '',
+  hideEmail = false,
+  hidePassword = false,
 }: {
   action: NonNullable<
     string | ((formData: FormData) => void | Promise<void>) | undefined
   >;
   children: React.ReactNode;
   defaultEmail?: string;
+  hideEmail?: boolean;
+  hidePassword?: boolean;
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
-      <div className="flex flex-col gap-2">
-        <Label
-          htmlFor="email"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
-        >
-          Email
-        </Label>
+      {!hideEmail && (
+        <div className="flex flex-col gap-2">
+          <Label
+            htmlFor="email"
+            className="text-zinc-600 font-normal dark:text-zinc-400"
+          >
+            Email
+          </Label>
 
-        <Input
-          id="email"
-          name="email"
-          className="bg-muted text-md md:text-sm"
-          type="email"
-          placeholder="user@acme.com"
-          autoComplete="email"
-          required
-          autoFocus
-          defaultValue={defaultEmail}
-          onInvalid={(e) => {
-            // @ts-ignore
-            e.target.setCustomValidity('Обязательное поле для заполнения!');
-          }}
-          onInput={(e) => {
-            // @ts-ignore
-            e.target.setCustomValidity('');
-          }}
-        />
-      </div>
+          <Input
+            id="email"
+            name="email"
+            className="bg-muted text-md md:text-sm"
+            type="email"
+            placeholder="user@acme.com"
+            autoComplete="email"
+            required
+            autoFocus
+            defaultValue={defaultEmail}
+            onInvalid={(e) => {
+              // @ts-ignore
+              e.target.setCustomValidity('Обязательное поле для заполнения!');
+            }}
+            onInput={(e) => {
+              // @ts-ignore
+              e.target.setCustomValidity('');
+            }}
+          />
+        </div>
+      )}
 
-      <div className="flex flex-col gap-2">
-        <Label
-          htmlFor="password"
-          className="text-zinc-600 font-normal dark:text-zinc-400"
-        >
-          Пароль
-        </Label>
+      {!hidePassword && (
+        <div className="flex flex-col gap-2">
+          <Label
+            htmlFor="password"
+            className="text-zinc-600 font-normal dark:text-zinc-400"
+          >
+            Пароль
+          </Label>
 
-        <Input
-          id="password"
-          name="password"
-          className="bg-muted text-md md:text-sm"
-          type="password"
-          required
-          onInvalid={(e) => {
-            // @ts-ignore
-            e.target.setCustomValidity('Обязательное поле для заполнения!');
-          }}
-          onInput={(e) => {
-            // @ts-ignore
-            e.target.setCustomValidity('');
-          }}
-        />
-      </div>
+          <Input
+            id="password"
+            name="password"
+            className="bg-muted text-md md:text-sm"
+            type="password"
+            required
+            onInvalid={(e) => {
+              // @ts-ignore
+              e.target.setCustomValidity('Обязательное поле для заполнения!');
+            }}
+            onInput={(e) => {
+              // @ts-ignore
+              e.target.setCustomValidity('');
+            }}
+          />
+        </div>
+      )}
 
       {children}
     </Form>

@@ -61,6 +61,8 @@
     "next": "15.3.0-canary.12",
     "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.3.0",
+    "nodemailer": "^6.9.12",
+    "@types/nodemailer": "^6.4.14",
     "orderedmap": "^2.1.1",
     "papaparse": "^5.5.2",
     "pdfjs-dist": "latest",

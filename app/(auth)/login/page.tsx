@@ -68,6 +68,14 @@ export default function Page() {
             </Link>
             {' бесплатно.'}
           </p>
+          <p className="text-center text-sm text-gray-600 dark:text-zinc-400">
+            <Link
+              href="/reset-password"
+              className="font-semibold text-gray-800 hover:underline dark:text-zinc-200"
+            >
+              Забыли пароль?
+            </Link>
+          </p>
         </AuthForm>
       </div>
     </div>
