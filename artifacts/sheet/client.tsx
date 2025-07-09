@@ -5,10 +5,14 @@ import {
   RedoIcon,
   SparklesIcon,
   UndoIcon,
+  ExcelIcon,
 } from '@/components/icons';
 import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
+import { csvToExcelData } from '@/lib/utils/excel-export';
+import { ExcelDownloadDialog } from '@/components/excel-download-dialog';
+import { useState } from 'react';
 
 type Metadata = any;
 
@@ -33,14 +37,53 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
     onSaveContent,
     status,
   }) => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [excelData, setExcelData] = useState<string[][]>([]);
+
+    const handleExcelExport = () => {
+      console.log('handleExcelExport called');
+      console.log('content:', content);
+
+      try {
+        // Конвертируем CSV в данные для Excel
+        const data = csvToExcelData(content);
+        console.log('Excel data prepared:', data);
+
+        setExcelData(data);
+        setIsDialogOpen(true);
+        console.log('Dialog should open now');
+      } catch (error) {
+        console.error('Error preparing Excel export:', error);
+        toast.error('Ошибка при подготовке экспорта в Excel');
+      }
+    };
+
+    console.log('SheetArtifact content render:', {
+      isDialogOpen,
+      excelDataLength: excelData.length,
+      contentLength: content?.length,
+    });
+
     return (
-      <SpreadsheetEditor
-        content={content}
-        currentVersionIndex={currentVersionIndex}
-        isCurrentVersion={isCurrentVersion}
-        saveContent={onSaveContent}
-        status={status}
-      />
+      <>
+        <SpreadsheetEditor
+          content={content}
+          currentVersionIndex={currentVersionIndex}
+          isCurrentVersion={isCurrentVersion}
+          saveContent={onSaveContent}
+          status={status}
+          onExcelExport={handleExcelExport}
+        />
+        <ExcelDownloadDialog
+          isOpen={isDialogOpen}
+          onClose={() => {
+            console.log('Dialog closing');
+            setIsDialogOpen(false);
+          }}
+          data={excelData}
+          defaultFilename="spreadsheet.xlsx"
+        />
+      </>
     );
   },
   actions: [
@@ -86,6 +129,26 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
 
         navigator.clipboard.writeText(cleanedCsv);
         toast.success('CSV скопировано!');
+      },
+    },
+    {
+      icon: <ExcelIcon />,
+      description: 'Export as Excel',
+      onClick: ({ content }) => {
+        console.log('Excel action clicked');
+        try {
+          // Конвертируем CSV в данные для Excel
+          const excelData = csvToExcelData(content);
+          console.log('Excel data from action:', excelData);
+
+          // Открываем диалог для выбора имени файла
+          // Диалог будет открыт через компонент content
+          // Здесь мы просто показываем уведомление
+          toast.info('Нажмите кнопку Excel в редакторе для скачивания');
+        } catch (error) {
+          console.error('Error exporting to Excel:', error);
+          toast.error('Ошибка при экспорте в Excel');
+        }
       },
     },
   ],

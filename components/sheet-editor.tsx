@@ -5,6 +5,7 @@ import DataGrid, { textEditor } from 'react-data-grid';
 import { parse, unparse } from 'papaparse';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import { ExcelIcon } from '@/components/icons';
 
 import 'react-data-grid/lib/styles.css';
 
@@ -14,6 +15,7 @@ type SheetEditorProps = {
   status: string;
   isCurrentVersion: boolean;
   currentVersionIndex: number;
+  onExcelExport?: () => void;
 };
 
 const MIN_ROWS = 50;
@@ -24,6 +26,7 @@ const PureSpreadsheetEditor = ({
   saveContent,
   status,
   isCurrentVersion,
+  onExcelExport,
 }: SheetEditorProps) => {
   const { theme } = useTheme();
 
@@ -109,24 +112,50 @@ const PureSpreadsheetEditor = ({
     saveContent(newCsvContent, true);
   };
 
+  const handleExportToExcel = () => {
+    console.log('SpreadsheetEditor handleExportToExcel called');
+    console.log('onExcelExport callback:', onExcelExport);
+
+    if (onExcelExport) {
+      console.log('Calling onExcelExport callback');
+      onExcelExport();
+    } else {
+      console.log('onExcelExport callback is not provided');
+    }
+  };
+
   return (
-    <DataGrid
-      className={theme === 'dark' ? 'rdg-dark' : 'rdg-light'}
-      columns={columns}
-      rows={localRows}
-      enableVirtualization
-      onRowsChange={handleRowsChange}
-      onCellClick={(args) => {
-        if (args.column.key !== 'rowNumber') {
-          args.selectCell(true);
-        }
-      }}
-      style={{ height: '100%' }}
-      defaultColumnOptions={{
-        resizable: true,
-        sortable: true,
-      }}
-    />
+    <div className="flex flex-col h-full">
+      <div className="flex justify-end p-2 border-b dark:border-zinc-700">
+        <button
+          onClick={handleExportToExcel}
+          className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          title="Export to Excel"
+        >
+          <ExcelIcon size={16} />
+          Export Excel
+        </button>
+      </div>
+      <div className="flex-1">
+        <DataGrid
+          className={theme === 'dark' ? 'rdg-dark' : 'rdg-light'}
+          columns={columns}
+          rows={localRows}
+          enableVirtualization
+          onRowsChange={handleRowsChange}
+          onCellClick={(args) => {
+            if (args.column.key !== 'rowNumber') {
+              args.selectCell(true);
+            }
+          }}
+          style={{ height: '100%' }}
+          defaultColumnOptions={{
+            resizable: true,
+            sortable: true,
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
@@ -136,7 +165,8 @@ function areEqual(prevProps: SheetEditorProps, nextProps: SheetEditorProps) {
     prevProps.isCurrentVersion === nextProps.isCurrentVersion &&
     !(prevProps.status === 'streaming' && nextProps.status === 'streaming') &&
     prevProps.content === nextProps.content &&
-    prevProps.saveContent === nextProps.saveContent
+    prevProps.saveContent === nextProps.saveContent &&
+    prevProps.onExcelExport === nextProps.onExcelExport
   );
 }
 

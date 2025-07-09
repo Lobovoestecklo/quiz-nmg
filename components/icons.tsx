@@ -1137,6 +1137,23 @@ export const DownloadIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+export const ExcelIcon = ({ size = 16 }: { size?: number }) => (
+  <svg
+    height={size}
+    strokeLinejoin="round"
+    viewBox="0 0 16 16"
+    width={size}
+    style={{ color: 'currentcolor' }}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M2.5 1.5C1.67157 1.5 1 2.17157 1 3V13C1 13.8284 1.67157 14.5 2.5 14.5H13.5C14.3284 14.5 15 13.8284 15 13V3C15 2.17157 14.3284 1.5 13.5 1.5H2.5ZM2.5 3H13.5V13H2.5V3ZM4 5V11H5V5H4ZM6 5V11H7V5H6ZM8 5V11H9V5H8ZM10 5V11H11V5H10ZM12 5V11H13V5H12Z"
+      fill="currentColor"
+    ></path>
+  </svg>
+);
+
 export const LineChartIcon = ({ size = 16 }: { size?: number }) => (
   <svg
     height={size}
