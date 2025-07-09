@@ -188,7 +188,13 @@ function PureMultimodalInput({
 
         setAttachments((currentAttachments) => [
           ...currentAttachments,
-          ...successfullyUploadedAttachments,
+          ...successfullyUploadedAttachments
+            .filter((a) => !!a)
+            .map((a) => ({
+              url: a!.url,
+              name: a!.name,
+              contentType: a!.contentType,
+            })),
         ]);
       } catch (error) {
         console.error('Error uploading files!', error);

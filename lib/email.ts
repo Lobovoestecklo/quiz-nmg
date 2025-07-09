@@ -1,7 +1,7 @@
-import nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 
 // Create transporter configuration
-const transporter = nodemailer.createTransporter({
+const transporter = createTransport({
   service: 'gmail',
   auth: {
     user: process.env.GMAIL_USER,
@@ -31,4 +31,4 @@ export async function sendPasswordResetEmailNodemailer(
   });
 
   return { data: 'success', error: null };
-} 
+}
