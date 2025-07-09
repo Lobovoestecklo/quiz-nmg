@@ -24,24 +24,39 @@ export default function Page() {
   );
 
   useEffect(() => {
+    console.log('🔄 [LOGIN_PAGE] State changed:', state.status);
+
     if (state.status === 'failed') {
+      console.log('❌ [LOGIN_PAGE] Login failed, showing error toast');
       toast({
         type: 'error',
         description: 'Введены некорректные данные!',
       });
     } else if (state.status === 'invalid_data') {
+      console.log('❌ [LOGIN_PAGE] Invalid data, showing error toast');
       toast({
         type: 'error',
         description: 'Введены некорректные данные!',
       });
     } else if (state.status === 'success') {
+      console.log('✅ [LOGIN_PAGE] Login successful, refreshing router');
       setIsSuccessful(true);
       router.refresh();
     }
   }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    console.log('📝 [LOGIN_PAGE] Form submitted');
+    console.log('📧 [LOGIN_PAGE] Email from form:', email);
+    console.log(
+      '🔑 [LOGIN_PAGE] Password from form:',
+      password ? '[HIDDEN]' : '[MISSING]',
+    );
+
+    setEmail(email);
     formAction(formData);
   };
 

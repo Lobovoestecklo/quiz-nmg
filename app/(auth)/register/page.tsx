@@ -24,19 +24,31 @@ export default function Page() {
   );
 
   useEffect(() => {
+    console.log('🔄 [REGISTER_PAGE] State changed:', state.status);
+
     if (state.status === 'user_exists') {
+      console.log(
+        '❌ [REGISTER_PAGE] User already exists, showing error toast',
+      );
       toast({
         type: 'error',
         description: 'Пользователь с таким email уже существует!',
       });
     } else if (state.status === 'failed') {
+      console.log(
+        '❌ [REGISTER_PAGE] Registration failed, showing error toast',
+      );
       toast({ type: 'error', description: 'Не удалось создать аккаунт!' });
     } else if (state.status === 'invalid_data') {
+      console.log('❌ [REGISTER_PAGE] Invalid data, showing error toast');
       toast({
         type: 'error',
         description: 'Введены некорректные данные!',
       });
     } else if (state.status === 'success') {
+      console.log(
+        '✅ [REGISTER_PAGE] Registration successful, showing success toast and refreshing',
+      );
       toast({ type: 'success', description: 'Аккаунт успешно создан!' });
 
       setIsSuccessful(true);
@@ -45,7 +57,17 @@ export default function Page() {
   }, [state]);
 
   const handleSubmit = (formData: FormData) => {
-    setEmail(formData.get('email') as string);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    console.log('📝 [REGISTER_PAGE] Form submitted');
+    console.log('📧 [REGISTER_PAGE] Email from form:', email);
+    console.log(
+      '🔑 [REGISTER_PAGE] Password from form:',
+      password ? '[HIDDEN]' : '[MISSING]',
+    );
+
+    setEmail(email);
     formAction(formData);
   };
 

@@ -19,24 +19,44 @@ export const login = async (
   _: LoginActionState,
   formData: FormData,
 ): Promise<LoginActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
+  console.log('🚀 [LOGIN] Starting login action');
 
-    await signIn('credentials', {
+  try {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    console.log('📧 [LOGIN] Email from form:', email);
+    console.log(
+      '🔑 [LOGIN] Password from form:',
+      password ? '[HIDDEN]' : '[MISSING]',
+    );
+
+    console.log('✅ [LOGIN] Validating form data...');
+    const validatedData = authFormSchema.parse({
+      email,
+      password,
+    });
+    console.log('✅ [LOGIN] Form data validation successful');
+
+    console.log('🔐 [LOGIN] Attempting to sign in...');
+    const signInResult = await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
+    console.log('🔐 [LOGIN] Sign in result:', signInResult);
 
+    console.log('✅ [LOGIN] Login action completed successfully');
     return { status: 'success' };
   } catch (error) {
+    console.error('💥 [LOGIN] Error during login:', error);
+
     if (error instanceof z.ZodError) {
+      console.log('❌ [LOGIN] Validation error:', error.errors);
       return { status: 'invalid_data' };
     }
 
+    console.log('❌ [LOGIN] General error, returning failed status');
     return { status: 'failed' };
   }
 };
@@ -55,30 +75,57 @@ export const register = async (
   _: RegisterActionState,
   formData: FormData,
 ): Promise<RegisterActionState> => {
-  try {
-    const validatedData = authFormSchema.parse({
-      email: formData.get('email'),
-      password: formData.get('password'),
-    });
+  console.log('🚀 [REGISTER] Starting register action');
 
+  try {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    console.log('📧 [REGISTER] Email from form:', email);
+    console.log(
+      '🔑 [REGISTER] Password from form:',
+      password ? '[HIDDEN]' : '[MISSING]',
+    );
+
+    console.log('✅ [REGISTER] Validating form data...');
+    const validatedData = authFormSchema.parse({
+      email,
+      password,
+    });
+    console.log('✅ [REGISTER] Form data validation successful');
+
+    console.log('🔍 [REGISTER] Checking if user already exists...');
     const [user] = await getUser(validatedData.email);
+    console.log('👤 [REGISTER] Existing user found:', !!user);
 
     if (user) {
+      console.log('❌ [REGISTER] User already exists:', user.email);
       return { status: 'user_exists' } as RegisterActionState;
     }
+
+    console.log('👤 [REGISTER] Creating new user...');
     await createUser(validatedData.email, validatedData.password);
-    await signIn('credentials', {
+    console.log('✅ [REGISTER] User created successfully');
+
+    console.log('🔐 [REGISTER] Signing in newly created user...');
+    const signInResult = await signIn('credentials', {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
+    console.log('🔐 [REGISTER] Sign in result:', signInResult);
 
+    console.log('✅ [REGISTER] Registration completed successfully');
     return { status: 'success' };
   } catch (error) {
+    console.error('💥 [REGISTER] Error during registration:', error);
+
     if (error instanceof z.ZodError) {
+      console.log('❌ [REGISTER] Validation error:', error.errors);
       return { status: 'invalid_data' };
     }
 
+    console.log('❌ [REGISTER] General error, returning failed status');
     return { status: 'failed' };
   }
 };

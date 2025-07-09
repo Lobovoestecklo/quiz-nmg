@@ -16,23 +16,47 @@ export const authConfig = {
       const isOnRegister = nextUrl.pathname.startsWith('/register');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
 
+      console.log(
+        '🔐 [AUTH_CONFIG] Authorization check for:',
+        nextUrl.pathname,
+      );
+      console.log('👤 [AUTH_CONFIG] User logged in:', isLoggedIn);
+      console.log(
+        '👤 [AUTH_CONFIG] User details:',
+        auth?.user ? { id: auth.user.id, email: auth.user.email } : 'null',
+      );
+      console.log('📍 [AUTH_CONFIG] Current path:', nextUrl.pathname);
+      console.log('📍 [AUTH_CONFIG] Is on chat page:', isOnChat);
+      console.log('📍 [AUTH_CONFIG] Is on register page:', isOnRegister);
+      console.log('📍 [AUTH_CONFIG] Is on login page:', isOnLogin);
+
       if (isLoggedIn && (isOnLogin || isOnRegister)) {
+        console.log(
+          '🔄 [AUTH_CONFIG] Redirecting logged in user from auth pages to home',
+        );
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
       if (isOnRegister || isOnLogin) {
+        console.log('✅ [AUTH_CONFIG] Allowing access to auth pages');
         return true; // Always allow access to register and login pages
       }
 
       if (isOnChat) {
-        if (isLoggedIn) return true;
+        if (isLoggedIn) {
+          console.log('✅ [AUTH_CONFIG] Allowing logged in user to chat');
+          return true;
+        }
+        console.log('❌ [AUTH_CONFIG] Blocking unauthenticated user from chat');
         return false; // Redirect unauthenticated users to login page
       }
 
       if (isLoggedIn) {
+        console.log('🔄 [AUTH_CONFIG] Redirecting logged in user to home');
         return Response.redirect(new URL('/', nextUrl as unknown as URL));
       }
 
+      console.log('✅ [AUTH_CONFIG] Allowing access to other pages');
       return true;
     },
   },
