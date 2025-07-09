@@ -458,7 +458,7 @@ function PureArtifact({
 
                   {isContentDirty2 ? (
                     <div className="text-sm text-muted-foreground">
-                      Добавлены изменения в сценарий, нажмите сохранить
+                      Добавлены изменения в тест, нажмите сохранить
                     </div>
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">

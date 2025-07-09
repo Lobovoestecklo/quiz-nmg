@@ -1,4 +1,4 @@
-// app/(chat)/api/scenario/route.ts
+// app/(chat)/api/test/route.ts
 import { auth } from '@/app/(auth)/auth';
 import {
   getChatById,
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       await saveChat({
         id: chatId,
         userId: session.user.id,
-        title: `Сценарий: ${title}`,
+        title: `Тест: ${title}`,
       });
 
       isNewChat = true;
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     // Create message parts with tool invocation
     const messageParts = [
-      { type: 'text', text: 'Создаю новый сценарий...' },
+      { type: 'text', text: 'Создаю новый тест...' },
       {
         type: 'tool-invocation',
         toolInvocation: {
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       },
       {
         type: 'text',
-        text: `Сценарий ${title} успешно создан.`,
+        text: `Тест ${title} успешно создан.`,
       },
     ];
 
@@ -108,8 +108,8 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error('Failed to create scenario:', error);
-    return new Response('Произошла ошибка при создании сценария', {
+    console.error('Failed to create test:', error);
+    return new Response('Произошла ошибка при создании теста', {
       status: 500,
     });
   }

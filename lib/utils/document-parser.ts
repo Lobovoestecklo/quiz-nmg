@@ -28,6 +28,15 @@ export async function extractTextFromDocument(file: File): Promise<string> {
     return extractTextFromDoc(file);
   }
 
+  // PPTX files
+  if (
+    fileType ===
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    fileName.endsWith('.pptx')
+  ) {
+    return extractTextFromPptx(file);
+  }
+
   // TXT files
   if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
     return extractTextFromTxt(file);
@@ -54,9 +63,9 @@ async function extractTextFromDocx(file: File): Promise<string> {
 
     return result.value || '';
   } catch (error) {
-    console.error('DOCX parsing error:', error);
+    console.error('DOC parsing error:', error);
     throw new Error(
-      `Failed to extract text from DOCX file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      `Failed to extract text from DOC file: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }
@@ -82,6 +91,37 @@ async function extractTextFromDoc(file: File): Promise<string> {
     console.error('DOC parsing error:', error);
     throw new Error(
       `Failed to extract text from DOC file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
+
+/**
+ * Extracts text content from a PPTX file using mammoth
+ * @param file The PPTX file object to parse
+ * @returns A promise that resolves with the extracted text content
+ */
+async function extractTextFromPptx(file: File): Promise<string> {
+  try {
+    const mammoth = await import('mammoth');
+    const arrayBuffer = await file.arrayBuffer();
+
+    const result = await mammoth.extractRawText({ arrayBuffer });
+
+    if (result.messages.length > 0) {
+      console.warn('PPTX parsing warnings:', result.messages);
+    }
+
+    if (!result.value || result.value.trim() === '') {
+      throw new Error(
+        'PPTX файл не содержит извлекаемого текста. Убедитесь, что презентация содержит текстовые слайды.',
+      );
+    }
+
+    return result.value;
+  } catch (error) {
+    console.error('PPTX parsing error:', error);
+    throw new Error(
+      `Failed to extract text from PPTX file: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }
@@ -117,6 +157,7 @@ export function isSupportedDocumentFormat(file: File): boolean {
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/msword',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'text/plain',
   ];
 
@@ -125,7 +166,7 @@ export function isSupportedDocumentFormat(file: File): boolean {
   }
 
   // Check by file extension
-  const supportedExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+  const supportedExtensions = ['.pdf', '.docx', '.doc', '.pptx', '.txt'];
   return supportedExtensions.some((ext) => fileName.endsWith(ext));
 }
 
@@ -150,6 +191,13 @@ export function getFileTypeDescription(file: File): string {
   }
   if (fileType === 'application/msword' || fileName.endsWith('.doc')) {
     return 'DOC документ';
+  }
+  if (
+    fileType ===
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
+    fileName.endsWith('.pptx')
+  ) {
+    return 'PPTX презентация';
   }
   if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
     return 'Текстовый файл';

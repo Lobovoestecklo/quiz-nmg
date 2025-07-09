@@ -55,7 +55,7 @@ function PureMultimodalInput({
   append,
   handleSubmit,
   className,
-  isWithScenarioInsert,
+  isWithTestInsert,
 }: {
   chatId: string;
   input: UseChatHelpers['input'];
@@ -69,7 +69,7 @@ function PureMultimodalInput({
   append: UseChatHelpers['append'];
   handleSubmit: UseChatHelpers['handleSubmit'];
   className?: string;
-  isWithScenarioInsert?: boolean;
+  isWithTestInsert?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -280,10 +280,10 @@ function PureMultimodalInput({
         <AttachmentsButton
           fileInputRef={fileInputRef}
           status={status}
-          isWithScenarioInsert={isWithScenarioInsert}
+          isWithTestInsert={isWithTestInsert}
           chatId={chatId}
           // TODO add functionality to set title
-          title={'Мой сценарий'}
+          title={'Мой тест'}
           content={'...'}
           setMessages={setMessages}
           messages={messages}
@@ -319,7 +319,7 @@ export const MultimodalInput = memo(
 function PureAttachmentsButton({
   fileInputRef,
   status,
-  isWithScenarioInsert,
+  isWithTestInsert,
   chatId,
   title,
   content,
@@ -328,7 +328,7 @@ function PureAttachmentsButton({
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers['status'];
-  isWithScenarioInsert?: boolean;
+  isWithTestInsert?: boolean;
   chatId: string;
   title?: string;
   content?: string;
@@ -340,10 +340,10 @@ function PureAttachmentsButton({
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const [hasDocuments, setHasDocuments] = useState(false);
 
-  const handleInsertScenario = useCallback(async () => {
-    if (!isWithScenarioInsert || !chatId || !title || !content) return;
+  const handleInsertTest = useCallback(async () => {
+    if (!isWithTestInsert || !chatId || !title || !content) return;
     try {
-      const response = await fetch('/api/scenario', {
+      const response = await fetch('/api/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -356,26 +356,26 @@ function PureAttachmentsButton({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create scenario');
+        throw new Error('Failed to create test');
       }
 
       const result: any = await response.json();
 
-      const { chatId: scenarioChatId, isNewChat, savedMessage } = result;
+      const { chatId: testChatId, isNewChat, savedMessage } = result;
       if (isNewChat) {
-        toast.success('Сценарий успешно создан');
-        router.push(`/chat/${scenarioChatId}`);
+        toast.success('Тест успешно создан');
+        router.push(`/chat/${testChatId}`);
       } else {
-        toast.success('Сценарий успешно добавлен');
+        toast.success('Тест успешно добавлен');
         if (savedMessage) {
           setMessages([...messages, savedMessage]);
         }
       }
     } catch (error) {
-      console.error('Error creating scenario:', error);
-      toast.error('Не удалось создать сценарий');
+      console.error('Error creating test:', error);
+      toast.error('Не удалось создать тест');
     }
-  }, [isWithScenarioInsert, chatId, title, content, messages, setMessages]);
+  }, [isWithTestInsert, chatId, title, content, messages, setMessages]);
 
   const handlePdfFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -389,7 +389,7 @@ function PureAttachmentsButton({
 
       if (invalidFiles.length > 0) {
         toast.error(
-          'Пожалуйста, выберите только поддерживаемые документы (PDF, DOCX, DOC, TXT).',
+          'Пожалуйста, выберите только поддерживаемые документы (PDF, DOCX, DOC, PPTX, TXT).',
         );
         if (event.target) event.target.value = '';
         return;
@@ -428,7 +428,7 @@ function PureAttachmentsButton({
             continue;
           }
 
-          toast.loading(`Сохранение документа ${file.name}...`, {
+          toast.loading(`Сохранение учебного материала ${file.name}...`, {
             id: loadingToastId,
           });
           const apiUrl = `/api/document/document?chatId=${newChatId}`;
@@ -462,7 +462,7 @@ function PureAttachmentsButton({
               }
               throw new Error(
                 (errorData as any)?.error ||
-                  `Failed to create document (${response.status})`,
+                  `Failed to create educational material (${response.status})`,
               );
             }
 
@@ -478,7 +478,7 @@ function PureAttachmentsButton({
           } catch (error: any) {
             console.error('Document Creation/API Fetch Error:', error);
             toast.error(
-              `Ошибка сохранения документа ${file.name}: ${error.message}`,
+              `Ошибка сохранения учебного материала ${file.name}: ${error.message}`,
               {
                 id: loadingToastId,
               },
@@ -489,14 +489,14 @@ function PureAttachmentsButton({
         // Add all saved messages to chat at once
         if (savedMessages.length > 0) {
           if (isNewChat) {
-            toast.success('Сценарии успешно созданы', {
+            toast.success('Учебные материалы успешно созданы', {
               id: loadingToastId,
             });
             router.push(`/chat/${newChatId}`);
           } else {
             setMessages([...messages, ...savedMessages]);
             toast.success(
-              `${savedMessages.length} документов успешно созданы и добавлены в чат.`,
+              `${savedMessages.length} учебных материалов успешно созданы и добавлены в чат.`,
               {
                 id: loadingToastId,
               },
@@ -604,8 +604,8 @@ function PureAttachmentsButton({
               <div className="flex flex-col gap-1 items-start">
                 <div>
                   {hasDocuments
-                    ? 'В этом чате уже есть документы'
-                    : 'Вставить сценарий из документа'}
+                    ? 'В этом чате уже есть учебные материалы'
+                    : 'Загрузить учебный материал'}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   {hasDocuments ? '' : 'Текст будет извлечен'}
@@ -613,33 +613,29 @@ function PureAttachmentsButton({
               </div>
             </button>
           </DropdownMenuItem>
-          {isWithScenarioInsert &&
-            chatId &&
-            title &&
-            content &&
-            !hasDocuments && (
-              <DropdownMenuItem
-                onSelect={() => {
-                  setOpen(false);
-                  startTransition(handleInsertScenario);
-                }}
-                asChild
+          {isWithTestInsert && chatId && title && content && !hasDocuments && (
+            <DropdownMenuItem
+              onSelect={() => {
+                setOpen(false);
+                startTransition(handleInsertTest);
+              }}
+              asChild
+              disabled={hasDocuments || status !== 'ready'}
+            >
+              <button
+                type="button"
+                className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
                 disabled={hasDocuments || status !== 'ready'}
               >
-                <button
-                  type="button"
-                  className="gap-4 group/item flex flex-row justify-between items-center w-full cursor-pointer text-left"
-                  disabled={hasDocuments || status !== 'ready'}
-                >
-                  <div className="flex flex-col gap-1 items-start">
-                    <div>Вставить свой сценарий</div>
-                    <div className="text-xs text-muted-foreground">
-                      В виде текста
-                    </div>
+                <div className="flex flex-col gap-1 items-start">
+                  <div>Создать тест</div>
+                  <div className="text-xs text-muted-foreground">
+                    В виде текста
                   </div>
-                </button>
-              </DropdownMenuItem>
-            )}
+                </div>
+              </button>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

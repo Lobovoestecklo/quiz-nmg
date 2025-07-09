@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       await saveChat({
         id: chatId,
         userId: session.user.id,
-        title: `Сценарий: ${title}`,
+        title: `Учебный материал: ${title}`,
       });
 
       isNewChat = true;
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       },
       {
         type: 'text',
-        text: `Сценарий ${title} успешно извлечен из pdf. Желаете приступить к анализу?`,
+        text: `Учебный материал ${title} успешно извлечен из pdf. Желаете приступить к анализу?`,
       },
     ];
 

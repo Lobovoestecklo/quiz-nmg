@@ -18,7 +18,7 @@ export async function sendPasswordResetEmailNodemailer(
   await transporter.sendMail({
     from: process.env.GMAIL_USER,
     to: email,
-    subject: 'Сброс пароля - Scenario Coach',
+    subject: 'Сброс пароля - Test Coach',
     html: `
       <h2>Сброс пароля</h2>
       <p>Для сброса пароля перейдите по ссылке ниже:</p>

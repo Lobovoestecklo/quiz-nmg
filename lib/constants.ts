@@ -19,6 +19,11 @@ export const DOCX_EXTENSION = '.docx';
 export const DOC_MIME_TYPE = 'application/msword';
 export const DOC_EXTENSION = '.doc';
 
+// PPTX
+export const PPTX_MIME_TYPE =
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+export const PPTX_EXTENSION = '.pptx';
+
 // TXT
 export const TXT_MIME_TYPE = 'text/plain';
 export const TXT_EXTENSION = '.txt';
@@ -28,6 +33,7 @@ export const SUPPORTED_DOCUMENT_TYPES = [
   PDF_MIME_TYPE,
   DOCX_MIME_TYPE,
   DOC_MIME_TYPE,
+  PPTX_MIME_TYPE,
   TXT_MIME_TYPE,
 ];
 
@@ -35,6 +41,7 @@ export const SUPPORTED_DOCUMENT_EXTENSIONS = [
   PDF_EXTENSION,
   DOCX_EXTENSION,
   DOC_EXTENSION,
+  PPTX_EXTENSION,
   TXT_EXTENSION,
 ];
 

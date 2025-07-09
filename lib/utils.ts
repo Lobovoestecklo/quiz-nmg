@@ -173,7 +173,7 @@ export const createDocumentUpdateMessage = (
   return [
     {
       type: 'text',
-      text: `Обновляю сценарий:`,
+      text: `Тест обновлен.`,
     },
     {
       type: 'tool-invocation',
@@ -197,7 +197,7 @@ export const createDocumentUpdateMessage = (
     },
     {
       type: 'text',
-      text: `Сценарий обновлен.`,
+      text: `Учебный материал обновлен.`,
     },
   ];
 };
