@@ -212,11 +212,7 @@ const PureHitboxLayer = ({
       role="presentation"
       aria-hidden="true"
     >
-      <div className="w-full p-4 flex justify-end items-center">
-        <div className="absolute right-[9px] top-[13px] p-2 hover:dark:bg-zinc-700 rounded-md hover:bg-zinc-100">
-          <FullscreenIcon />
-        </div>
-      </div>
+      {/* Кнопка 'Развернуть' убрана отсюда, чтобы не дублировалась */}
     </div>
   );
 };
@@ -254,7 +250,8 @@ const PureDocumentHeader = ({
         {title}
       </div>
     </div>
-    {onDownload && (
+    {/* Кнопка 'Скачать' не показывается для Excel, чтобы не было дублирования */}
+    {onDownload && kind !== 'excel' && (
       <button
         onClick={(e) => {
           e.preventDefault();
@@ -262,7 +259,7 @@ const PureDocumentHeader = ({
           onDownload();
         }}
         className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
-        title="Скачать Excel файл"
+        title="Скачать файл"
         disabled={isStreaming}
       >
         <DownloadIcon size={16} />

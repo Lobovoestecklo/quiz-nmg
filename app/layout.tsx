@@ -10,8 +10,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   // metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'Marker',
-  description: 'Marker',
+  title: 'Quiz-assistent',
+  description: 'For quiz creation',
 };
 
 export const viewport = {

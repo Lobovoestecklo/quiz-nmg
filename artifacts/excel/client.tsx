@@ -93,6 +93,7 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
               </span>
             )}
           </div>
+          {/* Оставляем только одну кнопку 'Скачать' */}
           {!isInline && (
             <button
               onClick={handleDownload}
@@ -104,6 +105,22 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
               {isDownloading ? 'Скачивание...' : 'Скачать'}
             </button>
           )}
+        </div>
+        {/* Кнопка 'Развернуть' только внизу, зелёная кнопка 'Скачать' только одна сверху */}
+        <div className="flex justify-end p-4">
+          <button
+            type="button"
+            className="p-2 rounded-md bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition-colors text-sm font-medium shadow"
+            style={{ minWidth: 100 }}
+            onClick={() => {
+              // Логика раскрытия (развернуть Excel-документ)
+              // Можно вызвать setArtifact или другой обработчик, если нужно
+              // Пока просто console.log
+              console.log('Развернуть Excel-документ');
+            }}
+          >
+            Развернуть
+          </button>
         </div>
 
         <div className="flex-1 p-4">
