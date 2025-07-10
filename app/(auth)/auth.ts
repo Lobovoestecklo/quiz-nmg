@@ -90,7 +90,13 @@ export const {
     },
     async session({ session, token }) {
       console.log('🔄 [SESSION] Session callback called');
-      if (!session.user) session.user = {};
+      if (!session.user) {
+        session.user = {
+          id: '',
+          email: '',
+          emailVerified: null,
+        } as any;
+      }
       session.user.id = token.id as string;
       session.user.email = token.email as string;
       console.log('✅ [SESSION] User ID added to session:', token.id);
