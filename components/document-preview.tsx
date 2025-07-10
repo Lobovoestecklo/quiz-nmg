@@ -9,7 +9,13 @@ import {
   useRef,
 } from 'react';
 import { ArtifactKind, UIArtifact } from './artifact';
-import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from './icons';
+import {
+  FileIcon,
+  FullscreenIcon,
+  ImageIcon,
+  LoaderIcon,
+  DownloadIcon,
+} from './icons';
 import { cn, fetcher } from '@/lib/utils';
 import { Document } from '@/lib/db/schema';
 import { InlineDocumentSkeleton } from './document-skeleton';
@@ -21,6 +27,12 @@ import { useArtifact } from '@/hooks/use-artifact';
 import equal from 'fast-deep-equal';
 import { SpreadsheetEditor } from './sheet-editor';
 import { ImageEditor } from './image-editor';
+import { excelArtifact } from '@/artifacts/excel/client';
+import {
+  csvToExcelData,
+  createExcelBlob,
+  downloadBlob,
+} from '@/lib/utils/excel-export';
 
 interface DocumentPreviewProps {
   isReadonly: boolean;
@@ -99,6 +111,20 @@ export function DocumentPreview({
 
   if (!document) return <LoadingSkeleton artifactKind={artifact.kind} />;
 
+  // Функция для скачивания Excel
+  const handleExcelDownload = () => {
+    if (document.kind === 'excel') {
+      const excelData = document.content
+        ? csvToExcelData(document.content)
+        : [];
+      const filename = document.title + '.xlsx';
+      if (excelData.length > 0) {
+        const blob = createExcelBlob(excelData);
+        downloadBlob(blob, filename);
+      }
+    }
+  };
+
   return (
     <div className="relative w-full cursor-pointer">
       <HitboxLayer
@@ -110,6 +136,7 @@ export function DocumentPreview({
         title={document.title}
         kind={document.kind}
         isStreaming={artifact.status === 'streaming'}
+        onDownload={document.kind === 'excel' ? handleExcelDownload : undefined}
       />
       <DocumentContent document={document} />
     </div>
@@ -124,9 +151,6 @@ const LoadingSkeleton = ({ artifactKind }: { artifactKind: ArtifactKind }) => (
           <div className="animate-pulse rounded-md size-4 bg-muted-foreground/20" />
         </div>
         <div className="animate-pulse rounded-lg h-4 bg-muted-foreground/20 w-24" />
-      </div>
-      <div>
-        <FullscreenIcon />
       </div>
     </div>
     {artifactKind === 'image' ? (
@@ -203,10 +227,12 @@ const PureDocumentHeader = ({
   title,
   kind,
   isStreaming,
+  onDownload,
 }: {
   title: string;
   kind: ArtifactKind;
   isStreaming: boolean;
+  onDownload?: () => void;
 }) => (
   <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
     <div className="flex flex-row items-start sm:items-center gap-3">
@@ -221,16 +247,18 @@ const PureDocumentHeader = ({
           <FileIcon />
         )}
       </div>
-      <div className="-translate-y-1 sm:translate-y-0 font-medium">{title}</div>
+      <div className="-translate-y-1 sm:translate-y-0 font-medium ml-1">
+        {title}
+      </div>
     </div>
-    <div className="w-8" />
+    {/* Кнопку скачивания убираем полностью, чтобы не было наложения */}
   </div>
 );
 
 const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
   if (prevProps.title !== nextProps.title) return false;
   if (prevProps.isStreaming !== nextProps.isStreaming) return false;
-
+  if (prevProps.kind !== nextProps.kind) return false;
   return true;
 });
 
@@ -268,6 +296,29 @@ const DocumentContent = ({ document }: { document: Document }) => {
         <div className="flex flex-1 relative size-full p-4">
           <div className="absolute inset-0">
             <SpreadsheetEditor {...commonProps} />
+          </div>
+        </div>
+      ) : document.kind === 'excel' ? (
+        <div className="flex flex-1 relative size-full p-4">
+          <div className="absolute inset-0">
+            <excelArtifact.content
+              content={document.content ?? ''}
+              title={document.title}
+              currentVersionIndex={0}
+              isCurrentVersion={true}
+              onSaveContent={() => {}}
+              status={artifact.status}
+              metadata={{
+                filename: document.title + '.xlsx',
+                data: document.content ? csvToExcelData(document.content) : [],
+              }}
+              mode="edit"
+              isInline={false}
+              suggestions={[]}
+              getDocumentContentById={() => ''}
+              isLoading={false}
+              setMetadata={() => {}}
+            />
           </div>
         </div>
       ) : document.kind === 'image' ? (

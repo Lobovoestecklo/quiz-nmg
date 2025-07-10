@@ -12,6 +12,7 @@ export type DataStreamDelta = {
     | 'code-delta'
     | 'sheet-delta'
     | 'image-delta'
+    | 'excel-delta'
     | 'title'
     | 'id'
     | 'suggestion'
@@ -19,6 +20,7 @@ export type DataStreamDelta = {
     | 'finish'
     | 'kind';
   content: string | Suggestion;
+  metadata?: any;
 };
 
 export function DataStreamHandler({ id }: { id: string }) {

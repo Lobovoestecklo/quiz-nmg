@@ -102,28 +102,17 @@ export async function POST(request: Request) {
           maxTokens: 4000,
           // TODO: check whether we need cache control ephemeral
           maxSteps: 5,
-          // experimental_activeTools:
-          //   selectedChatModel === 'chat-model-reasoning'
-          //     ? []
-          //     : [
-          //         // 'getWeather',
-          //         'createDocument',
-          //         'updateDocument',
-          //         'getDocument',
-          //         //'requestSuggestions',
-          //       ],
+          experimental_activeTools:
+            selectedChatModel === 'chat-model-reasoning'
+              ? []
+              : ['createDocument', 'updateDocument', 'getDocument'],
           experimental_transform: smoothStream({ chunking: 'word' }),
           experimental_generateMessageId: generateUUID,
-          // tools: {
-          //   // getWeather,
-          //   createDocument: createDocument({ session, dataStream }),
-          //   updateDocument: updateDocument({ session, dataStream }),
-          //   getDocument: getDocument({ session, dataStream }),
-          //   // requestSuggestions: requestSuggestions({
-          //   //   session,
-          //   //   dataStream,
-          //   // }),
-          // },
+          tools: {
+            createDocument: createDocument({ session, dataStream }),
+            updateDocument: updateDocument({ session, dataStream }),
+            getDocument: getDocument({ session, dataStream }),
+          },
           onChunk: async ({ chunk }) => {
             if (startChunkUpdateTimestamp === null) {
               startChunkUpdateTimestamp = new Date();
