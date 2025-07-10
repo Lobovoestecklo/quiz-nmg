@@ -254,7 +254,21 @@ const PureDocumentHeader = ({
         {title}
       </div>
     </div>
-    {/* Кнопку скачивания убираем полностью, чтобы не было наложения */}
+    {onDownload && (
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDownload();
+        }}
+        className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
+        title="Скачать Excel файл"
+        disabled={isStreaming}
+      >
+        <DownloadIcon size={16} />
+        Скачать
+      </button>
+    )}
   </div>
 );
 

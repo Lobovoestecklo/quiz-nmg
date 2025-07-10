@@ -88,27 +88,12 @@ export const {
 
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
+    async session({ session, token }) {
       console.log('🔄 [SESSION] Session callback called');
-      console.log(
-        '👤 [SESSION] Session user:',
-        session.user
-          ? { id: session.user.id, email: session.user.email }
-          : 'null',
-      );
-      console.log('🎫 [SESSION] Token:', { id: token.id, email: token.email });
-
-      if (session.user) {
-        session.user.id = token.id as string;
-        console.log('✅ [SESSION] User ID added to session:', token.id);
-      }
-
+      if (!session.user) session.user = {};
+      session.user.id = token.id as string;
+      session.user.email = token.email as string;
+      console.log('✅ [SESSION] User ID added to session:', token.id);
       return session;
     },
   },
