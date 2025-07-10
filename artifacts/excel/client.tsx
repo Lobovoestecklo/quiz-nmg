@@ -16,6 +16,7 @@ import {
 import { useDownload } from '@/hooks/use-download';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useArtifact } from '@/hooks/use-artifact';
 
 type Metadata = {
   filename?: string;
@@ -52,6 +53,7 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
     isInline,
   }) => {
     const { downloadFile, isDownloading } = useDownload();
+    const { setArtifact } = useArtifact();
 
     // Автоматически создаем Excel данные из контента
     const excelData = metadata?.data || csvToExcelData(content || '');
@@ -66,7 +68,10 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
       metadata,
     });
 
-    const handleDownload = async () => {
+    const handleDownload = async (event: React.MouseEvent) => {
+      // Останавливаем всплытие события, чтобы HitboxLayer не перехватил клик
+      event.stopPropagation();
+      
       if (!excelData || excelData.length === 0) {
         toast.error('Нет данных для экспорта');
         return;
@@ -93,12 +98,13 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
               </span>
             )}
           </div>
-          {/* Оставляем только одну кнопку 'Скачать' */}
+          {/* Кнопка 'Скачать' всегда запускает скачивание */}
           {!isInline && (
             <button
               onClick={handleDownload}
               disabled={isDownloading || !excelData || excelData.length === 0}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-30"
+              style={{ pointerEvents: 'auto' }}
               title="Скачать Excel файл"
             >
               <DownloadIcon size={16} />
@@ -106,23 +112,7 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
             </button>
           )}
         </div>
-        {/* Кнопка 'Развернуть' только внизу, зелёная кнопка 'Скачать' только одна сверху */}
-        <div className="flex justify-end p-4">
-          <button
-            type="button"
-            className="p-2 rounded-md bg-zinc-200 text-zinc-700 hover:bg-zinc-300 transition-colors text-sm font-medium shadow"
-            style={{ minWidth: 100 }}
-            onClick={() => {
-              // Логика раскрытия (развернуть Excel-документ)
-              // Можно вызвать setArtifact или другой обработчик, если нужно
-              // Пока просто console.log
-              console.log('Развернуть Excel-документ');
-            }}
-          >
-            Развернуть
-          </button>
-        </div>
-
+        {/* Убираем кнопку 'Развернуть' отсюда, она теперь в DocumentHeader */}
         <div className="flex-1 p-4">
           {excelData && excelData.length > 0 ? (
             <div className="space-y-4">

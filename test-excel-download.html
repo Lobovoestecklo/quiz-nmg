@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Excel Download - FIXED</title>
+</head>
+
+<body>
+    <h1>Тест функциональности Excel - ИСПРАВЛЕНО</h1>
+    <p>Откройте <a href="http://localhost:3001" target="_blank">http://localhost:3001</a></p>
+    <p>Создайте Excel документ и протестируйте:</p>
+    <ol>
+        <li><strong>Кнопка "Скачать" в превью</strong> - должна сразу скачивать файл (не разворачивать)</li>
+        <li><strong>Кнопка "Развернуть" в превью</strong> - должна разворачивать документ с правильным содержимым</li>
+        <li><strong>В развернутом состоянии</strong> - кнопка "Скачать" должна работать</li>
+    </ol>
+
+    <h2>Что исправлено:</h2>
+    <ul>
+        <li>✅ Отключен HitboxLayer для Excel файлов</li>
+        <li>✅ Кнопка "Развернуть" перенесена в DocumentHeader</li>
+        <li>✅ Правильная передача данных при разворачивании</li>
+        <li>✅ event.stopPropagation() для предотвращения конфликтов</li>
+    </ul>
+</body>
+
+</html>

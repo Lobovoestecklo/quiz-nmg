@@ -130,16 +130,21 @@ export function DocumentPreview({
 
   return (
     <div className="relative w-full cursor-pointer">
-      <HitboxLayer
-        hitboxRef={hitboxRef}
-        result={result}
-        setArtifact={setArtifact}
-      />
+      {/* Отключаем HitboxLayer для Excel файлов */}
+      {document.kind !== 'excel' && (
+        <HitboxLayer
+          hitboxRef={hitboxRef}
+          result={result}
+          setArtifact={setArtifact}
+        />
+      )}
       <DocumentHeader
         title={document.title}
         kind={document.kind}
         isStreaming={artifact.status === 'streaming'}
         onDownload={document.kind === 'excel' ? handleExcelDownload : undefined}
+        result={result}
+        hitboxRef={hitboxRef}
       />
       <DocumentContent document={document} />
     </div>
@@ -181,6 +186,15 @@ const PureHitboxLayer = ({
 }) => {
   const handleClick = useCallback(
     (event: MouseEvent<HTMLElement>) => {
+      // Проверяем, не является ли кликнутый элемент кнопкой
+      const target = event.target as HTMLElement;
+      const isButton = target.closest('button');
+      
+      // Если кликнули на кнопку, не разворачиваем документ
+      if (isButton) {
+        return;
+      }
+
       const boundingBox = event.currentTarget.getBoundingClientRect();
 
       setArtifact((artifact) =>
@@ -227,47 +241,92 @@ const PureDocumentHeader = ({
   kind,
   isStreaming,
   onDownload,
+  result,
+  hitboxRef,
 }: {
   title: string;
   kind: ArtifactKind;
   isStreaming: boolean;
   onDownload?: () => void;
-}) => (
-  <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
-    <div className="flex flex-row items-start sm:items-center gap-3">
-      <div className="text-muted-foreground">
-        {isStreaming ? (
-          <div className="animate-spin">
-            <LoaderIcon />
-          </div>
-        ) : kind === 'image' ? (
-          <ImageIcon />
-        ) : (
-          <FileIcon />
+  result: any;
+  hitboxRef: React.RefObject<HTMLDivElement>;
+}) => {
+  const { setArtifact } = useArtifact();
+
+  const handleExpand = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const boundingBox = hitboxRef.current?.getBoundingClientRect();
+    
+    setArtifact((artifact) =>
+      artifact.status === 'streaming'
+        ? { ...artifact, isVisible: true }
+        : {
+            ...artifact,
+            title: result.title,
+            documentId: result.id,
+            kind: result.kind,
+            isVisible: true,
+            boundingBox: boundingBox ? {
+              left: boundingBox.x,
+              top: boundingBox.y,
+              width: boundingBox.width,
+              height: boundingBox.height,
+            } : artifact.boundingBox,
+          },
+    );
+  };
+
+  return (
+    <div className="p-4 border rounded-t-2xl flex flex-row gap-2 items-start sm:items-center justify-between dark:bg-muted border-b-0 dark:border-zinc-700">
+      <div className="flex flex-row items-start sm:items-center gap-3">
+        <div className="text-muted-foreground">
+          {isStreaming ? (
+            <div className="animate-spin">
+              <LoaderIcon />
+            </div>
+          ) : kind === 'image' ? (
+            <ImageIcon />
+          ) : (
+            <FileIcon />
+          )}
+        </div>
+        <div className="-translate-y-1 sm:translate-y-0 font-medium ml-1">
+          {title}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        {/* Кнопка 'Развернуть' для Excel файлов */}
+        {kind === 'excel' && (
+          <button
+            onClick={handleExpand}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-zinc-200 text-zinc-700 rounded hover:bg-zinc-300 transition-colors relative z-20"
+            title="Развернуть Excel файл"
+          >
+            Развернуть
+          </button>
+        )}
+        {/* Кнопка 'Скачать' не показывается для Excel, чтобы не было дублирования */}
+        {onDownload && kind !== 'excel' && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDownload();
+            }}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
+            title="Скачать файл"
+            disabled={isStreaming}
+          >
+            <DownloadIcon size={16} />
+            Скачать
+          </button>
         )}
       </div>
-      <div className="-translate-y-1 sm:translate-y-0 font-medium ml-1">
-        {title}
-      </div>
     </div>
-    {/* Кнопка 'Скачать' не показывается для Excel, чтобы не было дублирования */}
-    {onDownload && kind !== 'excel' && (
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDownload();
-        }}
-        className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative z-20"
-        title="Скачать файл"
-        disabled={isStreaming}
-      >
-        <DownloadIcon size={16} />
-        Скачать
-      </button>
-    )}
-  </div>
-);
+  );
+};
 
 const DocumentHeader = memo(PureDocumentHeader, (prevProps, nextProps) => {
   if (prevProps.title !== nextProps.title) return false;
