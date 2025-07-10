@@ -170,28 +170,8 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
     );
   },
   actions: [
-    {
-      icon: <DownloadIcon size={18} />,
-      description: 'Скачать Excel файл',
-      onClick: ({ content, metadata }) => {
-        try {
-          const excelData = metadata?.data || csvToExcelData(content || '');
-          const filename =
-            metadata?.filename || generateFilenameWithDate('excel_export');
-
-          if (excelData && excelData.length > 0) {
-            const blob = createExcelBlob(excelData);
-            downloadBlob(blob, filename);
-            toast.success('Excel файл скачан!');
-          } else {
-            toast.error('Нет данных для экспорта');
-          }
-        } catch (error) {
-          console.error('Error downloading Excel file:', error);
-          toast.error('Ошибка при скачивании файла');
-        }
-      },
-    },
+    // Убираем actions чтобы не было дублирующих кнопок в правом верхнем углу
+    // Кнопка "Скачать" уже есть внутри артефакта
   ],
   toolbar: [
     {
