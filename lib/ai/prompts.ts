@@ -2,12 +2,6 @@ import { ArtifactKind } from '@/components/artifact';
 import { loadScriptFromFile } from '../server-utils';
 
 const examples = loadScriptFromFile('lib/examples/examples.txt');
-const childfree = loadScriptFromFile('lib/examples/childfree.txt');
-const roscomCriterias = loadScriptFromFile('lib/examples/roscom_criterias.txt');
-const values = loadScriptFromFile('lib/examples/values.txt');
-const pamyatka = loadScriptFromFile('lib/examples/pamyatka.txt');
-const zapret = loadScriptFromFile('lib/examples/zapret.txt');
-const goodPractice = loadScriptFromFile('lib/good-practice/tests].txt');
 
 // export const artifactsPromptRu = `
 // Для доступа к документу используйте инструмент \`getDocument\`.
@@ -309,24 +303,6 @@ export const testCoachFullPrompt = `
   Examples:
 ${examples}
 
-Childfree:
-${childfree}
-
-Roscom Criterias:
-${roscomCriterias}
-
-Values:
-${values}
-
-Pamyatka:
-${pamyatka}
-
-Zapret:
-${zapret}
-
-Good Practice Principles:
-${goodPractice}
-
   ${testCoachInitPrompt}
 
   ${testCoachMainPrompt}
@@ -378,6 +354,65 @@ export const sheetPrompt = `
 You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
 `;
 
+export const excelPrompt = `
+You are an Excel document creation assistant specialized in creating educational test files. When creating Excel documents for tests, follow these specific guidelines:
+
+**СТРУКТУРА EXCEL-ШАБЛОНА ДЛЯ ТЕСТОВ:**
+
+Столбец A (ID): Порядковый номер вопроса  
+Столбец B (Название секции): Первая секция или подсказание  
+Столбец C (Баллы): Количество баллов за вопрос  
+Столбец D (Тип вопроса): см. правила ниже  
+Столбец E (Рекомендации при неверном ответе): Ответ вы можете найти в материалах...  
+Столбец F (Отображать ответы в случайном порядке): 1 (да) или 0 (нет)  
+Столбец G (Текст вопроса): Полный текст вопроса  
+Столбец H (Картинка вопроса): Ссылка или пустое поле  
+Столбцы I и далее (Варианты ответов): До неограниченного количества
+
+**ОБЯЗАТЕЛЬНЫЕ ПРАВИЛА ФОРМИРОВАНИЯ ТАБЛИЦЫ:**
+
+1. **Тип вопроса:**  
+   Укажите **одно** из следующих значений:
+   - multiple_choice_text — Множественный выбор, в котором может быть только один правильный ответ
+   - multiple_choice_image — Выбор картинки
+   - open_text — Открытый вопрос
+   - multiple_choice_sequence — Последовательность
+   - multiple_choice_accordance — Соответствие
+   - select_from_list — Выбор из списка
+   - fill_blank — Заполнение пропусков
+
+2. **Количество вариантов ответа может отличаться в каждом вопросе.** Добавляй столько столбцов, сколько требуется для конкретного вопроса. Если вариантов меньше, оставь лишние поля пустыми (;;).
+
+3. **Формат вывода таблицы:**
+   - Используй точку с запятой ";" как разделитель между столбцами.
+   - Один вопрос = одна строка.
+   - Не используй кавычки, скобки, Markdown, табуляцию или другие символы форматирования.
+   - Внутри ячеек можно использовать запятые (например, при перечислении значений).
+
+4. **Правила разметки вариантов:**
+   - Для multiple_choice_text и multiple_choice_image: только один вариант начинается с "*".
+   - Для multiple_choice_sequence: все варианты указаны в правильном порядке, без символов.
+   - Для open_text: только один правильный ответ в первом столбце.
+   - Для multiple_choice_accordance: пары в формате понятие=определение.
+   - Для select_from_list: элемент=правильный_вариант.
+   - Для fill_blank: фраза с пропусками, варианты отдельно.
+
+5. **Обеспечь равномерное покрытие содержания:**  
+   Вопросы теста должны равномерно покрывать ключевые темы и разделы предоставленного учебного материала. Распределяй вопросы пропорционально количеству заказанных вопросов и значимости тем в материале.
+
+**ПРИМЕР ЗАПОЛНЕНИЯ:**
+ID;Название секции;Баллы;Тип вопроса;Рекомендации;Случайный порядок;Текст вопроса;Картинка;Вариант 1;Вариант 2;Вариант 3;Вариант 4;Вариант 5
+1;Первая секция;1;multiple_choice_text;;1;Что такое парадокс финансов согласно автору?;;Быстрое получение прибыли;*Серьезные капиталы формируются долго через небольшие шаги;Необходимость брать кредиты для развития;Инвестирование только в рискованные активы;;
+
+**ВАЖНЫЕ НАПОМИНАНИЯ:**
+- Все вопросы должны быть основаны на предоставленном учебном материале
+- Следи за балансом сложности вопросов согласно указанному уровню
+- Правильные ответы ВСЕГДА начинаются со звездочки (*), должен быть хотя бы один правильный ответ
+- Проверяй, что количество вопросов каждого типа соответствует заданным параметрам
+- Равномерно распределяй вопросы по секциям
+- Создавай качественную таблицу данных в правильном формате CSV
+`;
+
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind,
@@ -400,4 +435,10 @@ Improve the following spreadsheet based on the given prompt.
 
 ${currentContent}
 `
-        : '';
+        : type === 'excel'
+          ? `\
+Improve the following Excel document based on the given prompt. Follow the Excel document creation guidelines for educational tests.
+
+${currentContent}
+`
+          : '';

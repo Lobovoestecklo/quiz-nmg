@@ -11,7 +11,9 @@ import {
   createExcelBlob,
   downloadBlob,
   csvToExcelData,
+  generateFilenameWithDate,
 } from '@/lib/utils/excel-export';
+import { useDownload } from '@/hooks/use-download';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -49,11 +51,12 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
     metadata,
     isInline,
   }) => {
-    const [isDownloading, setIsDownloading] = useState(false);
+    const { downloadFile, isDownloading } = useDownload();
 
     // Автоматически создаем Excel данные из контента
     const excelData = metadata?.data || csvToExcelData(content || '');
-    const filename = metadata?.filename || 'export.xlsx';
+    const filename =
+      metadata?.filename || generateFilenameWithDate('excel_export');
 
     // DEBUG: выводим данные в консоль
     console.log('excelArtifact debug:', {
@@ -69,16 +72,12 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
         return;
       }
 
-      setIsDownloading(true);
       try {
         const blob = createExcelBlob(excelData);
-        downloadBlob(blob, filename);
-        toast.success('Excel файл скачан!');
+        await downloadFile(blob, filename);
       } catch (error) {
         console.error('Error downloading Excel file:', error);
         toast.error('Ошибка при скачивании файла');
-      } finally {
-        setIsDownloading(false);
       }
     };
 
@@ -170,7 +169,8 @@ export const excelArtifact = new Artifact<'excel', Metadata>({
       onClick: ({ content, metadata }) => {
         try {
           const excelData = metadata?.data || csvToExcelData(content || '');
-          const filename = metadata?.filename || 'export.xlsx';
+          const filename =
+            metadata?.filename || generateFilenameWithDate('excel_export');
 
           if (excelData && excelData.length > 0) {
             const blob = createExcelBlob(excelData);

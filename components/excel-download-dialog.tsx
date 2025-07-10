@@ -12,7 +12,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from './ui/dialog';
-import { createExcelBlob, downloadBlob } from '@/lib/utils/excel-export';
+import {
+  createExcelBlob,
+  downloadBlob,
+  generateFilenameWithDate,
+} from '@/lib/utils/excel-export';
 import { toast } from 'sonner';
 
 interface ExcelDownloadDialogProps {
@@ -26,9 +30,11 @@ export function ExcelDownloadDialog({
   isOpen,
   onClose,
   data,
-  defaultFilename = 'spreadsheet.xlsx',
+  defaultFilename,
 }: ExcelDownloadDialogProps) {
-  const [filename, setFilename] = useState(defaultFilename);
+  const [filename, setFilename] = useState(
+    defaultFilename || generateFilenameWithDate('spreadsheet'),
+  );
   const [isDownloading, setIsDownloading] = useState(false);
 
   // Отладочная информация
@@ -65,7 +71,7 @@ export function ExcelDownloadDialog({
 
   const handleCancel = () => {
     console.log('handleCancel called');
-    setFilename(defaultFilename);
+    setFilename(defaultFilename || generateFilenameWithDate('spreadsheet'));
     onClose();
   };
 

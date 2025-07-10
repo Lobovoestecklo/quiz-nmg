@@ -10,7 +10,10 @@ import {
 import { SpreadsheetEditor } from '@/components/sheet-editor';
 import { parse, unparse } from 'papaparse';
 import { toast } from 'sonner';
-import { csvToExcelData } from '@/lib/utils/excel-export';
+import {
+  csvToExcelData,
+  generateFilenameWithDate,
+} from '@/lib/utils/excel-export';
 import { ExcelDownloadDialog } from '@/components/excel-download-dialog';
 import { useState } from 'react';
 
@@ -81,7 +84,7 @@ export const sheetArtifact = new Artifact<'sheet', Metadata>({
             setIsDialogOpen(false);
           }}
           data={excelData}
-          defaultFilename="spreadsheet.xlsx"
+          defaultFilename={generateFilenameWithDate('spreadsheet')}
         />
       </>
     );

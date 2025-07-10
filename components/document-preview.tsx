@@ -32,6 +32,7 @@ import {
   csvToExcelData,
   createExcelBlob,
   downloadBlob,
+  generateFilenameWithDate,
 } from '@/lib/utils/excel-export';
 
 interface DocumentPreviewProps {
@@ -117,7 +118,9 @@ export function DocumentPreview({
       const excelData = document.content
         ? csvToExcelData(document.content)
         : [];
-      const filename = document.title + '.xlsx';
+      const filename = document.title
+        ? `${document.title}.xlsx`
+        : generateFilenameWithDate('document');
       if (excelData.length > 0) {
         const blob = createExcelBlob(excelData);
         downloadBlob(blob, filename);
