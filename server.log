@@ -1,0 +1,212 @@
+
+> ai-chatbot@0.1.0 dev
+> next dev --turbo
+
+   ▲ Next.js 15.3.0-canary.12 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.167:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     ✓ ppr
+
+ ✓ Starting...
+ ✓ Compiled in 219ms
+ ✓ Ready in 767ms
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbo
+
+🔐 [AUTH_CONFIG] Authorization check for: /
+👤 [AUTH_CONFIG] User logged in: false
+👤 [AUTH_CONFIG] User details: null
+📍 [AUTH_CONFIG] Current path: /
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+❌ [AUTH_CONFIG] Blocking unauthenticated user from chat
+🔐 [AUTH_CONFIG] Authorization check for: /
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+ ○ Compiling / ...
+ ✓ Compiled / in 3.7s
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET / 200 in 4282ms
+🔐 [AUTH_CONFIG] Authorization check for: /api/history
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/history
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /api/chat/documents/check
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/chat/documents/check
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /favicon.ico
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /favicon.ico
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+ ○ Compiling /api/history ...
+ ✓ Compiled /api/history in 708ms
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET /favicon.ico?favicon.46d6a819.ico 200 in 669ms
+ GET /api/history 200 in 1072ms
+ GET /api/chat/documents/check?chatId=76d9ad82-d1bf-417b-ba6a-297249be82f7 200 in 1071ms
+🔐 [AUTH_CONFIG] Authorization check for: /api/chat
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/chat
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /api/history
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/history
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /api/chat/documents/check
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/chat/documents/check
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET /api/chat/documents/check?chatId=76d9ad82-d1bf-417b-ba6a-297249be82f7 200 in 99ms
+ GET /api/history 200 in 106ms
+ ✓ Compiled /api/chat in 366ms
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+🔐 [AUTH_CONFIG] Authorization check for: /api/vote
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/vote
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /api/chat/documents/check
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/chat/documents/check
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET /api/chat/documents/check?chatId=76d9ad82-d1bf-417b-ba6a-297249be82f7 200 in 78ms
+ ✓ Compiled /api/vote in 223ms
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET /api/vote?chatId=76d9ad82-d1bf-417b-ba6a-297249be82f7 200 in 346ms
+ POST /api/chat 200 in 8583ms
+🔐 [AUTH_CONFIG] Authorization check for: /api/history
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/history
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔐 [AUTH_CONFIG] Authorization check for: /api/chat/documents/check
+👤 [AUTH_CONFIG] User logged in: true
+👤 [AUTH_CONFIG] User details: { id: undefined, email: 'daria.and19@gmail.com' }
+📍 [AUTH_CONFIG] Current path: /api/chat/documents/check
+📍 [AUTH_CONFIG] Is on chat page: true
+📍 [AUTH_CONFIG] Is on register page: false
+📍 [AUTH_CONFIG] Is on login page: false
+✅ [AUTH_CONFIG] Allowing logged in user to chat
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+🔄 [JWT] JWT callback called
+👤 [JWT] User: null
+🎫 [JWT] Token: {
+  id: '10789e35-20bd-4d66-9b86-55ad0bbae9b0',
+  email: 'daria.and19@gmail.com'
+}
+🔄 [SESSION] Session callback called
+✅ [SESSION] User ID added to session: 10789e35-20bd-4d66-9b86-55ad0bbae9b0
+ GET /api/history 200 in 69ms
+ GET /api/chat/documents/check?chatId=76d9ad82-d1bf-417b-ba6a-297249be82f7 200 in 66ms
+[?25h
