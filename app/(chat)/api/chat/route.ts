@@ -14,11 +14,14 @@ import {
   saveChat,
   saveMessages,
   upsertMessage,
+  updateChatTitleById,
 } from '@/lib/db/queries';
 import {
   generateUUID,
   getMostRecentUserMessage,
+  getBestUserMessageForTitle,
   getTrailingMessageId,
+  sanitizeResponseMessages,
 } from '@/lib/utils';
 import { generateTitleFromUserMessage } from '../../actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
@@ -64,14 +67,60 @@ export async function POST(request: Request) {
     const chat = await getChatById({ id });
 
     if (!chat) {
+      // Используем лучшее сообщение для генерации названия
+      const bestUserMessage = getBestUserMessageForTitle(messages);
+      console.log(
+        '🔍 [CHAT TITLE] Creating new chat, best message:',
+        bestUserMessage?.parts,
+      );
       const title = await generateTitleFromUserMessage({
-        message: userMessage,
+        message: bestUserMessage || userMessage,
       });
+      console.log('📝 [CHAT TITLE] Generated title for new chat:', title);
 
       await saveChat({ id, userId: session.user.id, title });
     } else {
       if (chat.userId !== session.user.id) {
         return new Response('Вы не авторизованы', { status: 401 });
+      }
+
+      // Проверяем, нужно ли обновить название чата на основе нового сообщения
+      const bestUserMessage = getBestUserMessageForTitle(messages);
+      console.log(
+        '🔍 [CHAT TITLE] Existing chat, best message:',
+        bestUserMessage?.parts,
+      );
+      console.log('🔍 [CHAT TITLE] Current chat title:', chat.title);
+
+      // Проверяем, есть ли сообщения лучше текущего названия
+      if (bestUserMessage) {
+        console.log(
+          '🔄 [CHAT TITLE] Found best message, generating new title...',
+        );
+        // Генерируем новое название на основе лучшего сообщения
+        const newTitle = await generateTitleFromUserMessage({
+          message: bestUserMessage,
+        });
+        console.log('📝 [CHAT TITLE] New title generated:', newTitle);
+
+        // Обновляем название чата только если оно отличается от текущего и не является "Новый чат"
+        if (newTitle !== chat.title && newTitle !== 'Новый чат') {
+          console.log(
+            '✅ [CHAT TITLE] Updating chat title from',
+            chat.title,
+            'to',
+            newTitle,
+          );
+          await updateChatTitleById({ chatId: id, title: newTitle });
+        } else {
+          console.log(
+            '⏭️ [CHAT TITLE] Title unchanged or still "Новый чат", skipping update',
+          );
+        }
+      } else {
+        console.log(
+          '⏭️ [CHAT TITLE] No best message found, keeping current title',
+        );
       }
     }
 

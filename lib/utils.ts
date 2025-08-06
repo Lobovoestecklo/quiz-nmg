@@ -142,6 +142,177 @@ export function getMostRecentUserMessage(messages: Array<UIMessage>) {
   return userMessages.at(-1);
 }
 
+export function getBestUserMessageForTitle(messages: Array<UIMessage>) {
+  const userMessages = messages.filter((message) => message.role === 'user');
+  console.log('🔍 [TITLE LOGIC] Total user messages:', userMessages.length);
+
+  // Список приветствий, которые нужно пропустить
+  const greetings = [
+    'привет',
+    'здравствуйте',
+    'добрый день',
+    'добрый вечер',
+    'доброе утро',
+    'hi',
+    'hello',
+    'hey',
+    'good morning',
+    'good afternoon',
+    'good evening',
+    'привет!',
+    'здравствуйте!',
+    'добрый день!',
+    'добрый вечер!',
+    'доброе утро!',
+    'hi!',
+    'hello!',
+    'hey!',
+    'good morning!',
+    'good afternoon!',
+    'good evening!',
+  ];
+
+  // Ищем самое информативное сообщение пользователя
+  let bestMessage = null;
+  let bestScore = 0;
+
+  for (const message of userMessages) {
+    const messageText = message.parts
+      .filter((part) => part.type === 'text')
+      .map((part) => (part as any).text)
+      .join(' ')
+      .toLowerCase()
+      .trim();
+
+    console.log('🔍 [TITLE LOGIC] Analyzing message:', messageText);
+
+    // Проверяем, является ли сообщение только приветствием
+    const isOnlyGreeting = greetings.some(
+      (greeting) => messageText === greeting || messageText === greeting.trim(),
+    );
+
+    if (isOnlyGreeting) {
+      console.log('⏭️ [TITLE LOGIC] Skipping greeting message');
+      continue; // Пропускаем сообщения, которые содержат только приветствие
+    }
+
+    // Вычисляем "информативность" сообщения
+    let score = 0;
+
+    // Базовый балл за длину (но не слишком длинные)
+    score += Math.min(messageText.length, 100);
+
+    // Бонус за ключевые слова, связанные с обучением
+    const educationalKeywords = [
+      'курс',
+      'обучение',
+      'развитие',
+      'навык',
+      'умение',
+      'изучить',
+      'научиться',
+      'программа',
+      'тренинг',
+      'семинар',
+      'мастер-класс',
+      'практика',
+      'теория',
+      'менеджмент',
+      'управление',
+      'лидерство',
+      'коммуникация',
+      'презентация',
+      'продажи',
+      'маркетинг',
+      'финансы',
+      'анализ',
+      'планирование',
+      'проект',
+      'команда',
+      'сотрудники',
+      'клиенты',
+      'партнеры',
+      'переговоры',
+      'конфликт',
+      'мотивация',
+      'делегирование',
+      'контроль',
+      'оценка',
+      'обратная связь',
+      'excel',
+      'word',
+      'powerpoint',
+      'access',
+      'outlook',
+      'teams',
+      'sharepoint',
+      'python',
+      'javascript',
+      'html',
+      'css',
+      'sql',
+      'база данных',
+      'аналитика',
+      'статистика',
+      'графики',
+      'отчеты',
+      'документы',
+      'процессы',
+      'автоматизация',
+    ];
+
+    educationalKeywords.forEach((keyword) => {
+      if (messageText.includes(keyword)) {
+        score += 50; // Большой бонус за образовательные ключевые слова
+        console.log(
+          '🎯 [TITLE LOGIC] Found educational keyword:',
+          keyword,
+          'score +50',
+        );
+      }
+    });
+
+    // Бонус за конкретные запросы
+    if (
+      messageText.includes('хочу') ||
+      messageText.includes('нужно') ||
+      messageText.includes('требуется')
+    ) {
+      score += 30;
+      console.log('🎯 [TITLE LOGIC] Found request word, score +30');
+    }
+
+    if (
+      messageText.includes('стать') ||
+      messageText.includes('развиться') ||
+      messageText.includes('получить')
+    ) {
+      score += 25;
+      console.log('🎯 [TITLE LOGIC] Found goal word, score +25');
+    }
+
+    // Штраф за очень короткие сообщения
+    if (messageText.length < 10) {
+      score -= 20;
+      console.log('⚠️ [TITLE LOGIC] Short message penalty, score -20');
+    }
+
+    console.log('📊 [TITLE LOGIC] Message score:', score);
+
+    // Если это сообщение лучше предыдущего лучшего
+    if (score > bestScore) {
+      bestScore = score;
+      bestMessage = message;
+      console.log('🏆 [TITLE LOGIC] New best message found with score:', score);
+    }
+  }
+
+  console.log('🏆 [TITLE LOGIC] Final best message score:', bestScore);
+
+  // Если не нашли подходящего сообщения, возвращаем последнее
+  return bestMessage || userMessages.at(-1);
+}
+
 export function getDocumentTimestampByIndex(
   documents: Array<Document>,
   index: number,
