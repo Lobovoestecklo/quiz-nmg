@@ -26,8 +26,28 @@ import { ArtifactKind } from '@/components/artifact';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
+// Check if database connection is available
+let isDatabaseAvailable = true;
+
+try {
+  if (!process.env.POSTGRES_URL) {
+    console.warn(
+      '⚠️ POSTGRES_URL is not defined, database operations will fail',
+    );
+    isDatabaseAvailable = false;
+  }
+} catch (error) {
+  console.warn('⚠️ Database connection not available:', error);
+  isDatabaseAvailable = false;
+}
+
 export async function getUser(email: string): Promise<Array<User>> {
   console.log('🔍 [DB] Getting user by email:', email);
+
+  if (!isDatabaseAvailable) {
+    console.warn('⚠️ [DB] Database not available, returning empty array');
+    return [];
+  }
 
   try {
     const users = await db.select().from(user).where(eq(user.email, email));
@@ -43,7 +63,8 @@ export async function getUser(email: string): Promise<Array<User>> {
     return users;
   } catch (error) {
     console.error('💥 [DB] Failed to get user from database:', error);
-    throw error;
+    // Return empty array instead of throwing to prevent middleware failure
+    return [];
   }
 }
 
@@ -53,6 +74,11 @@ export async function createUser(email: string, password: string) {
     '🔑 [DB] Password provided:',
     password ? '[HIDDEN]' : '[MISSING]',
   );
+
+  if (!isDatabaseAvailable) {
+    console.warn('⚠️ [DB] Database not available, cannot create user');
+    throw new Error('Database not available');
+  }
 
   const salt = genSaltSync(10);
   const hash = hashSync(password, salt);

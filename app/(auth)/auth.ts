@@ -67,7 +67,8 @@ export const {
           return user as any;
         } catch (error) {
           console.error('💥 [AUTH] Error during authorization:', error);
-          throw error;
+          // Return null instead of throwing error to prevent middleware failure
+          return null;
         }
       },
     }),
