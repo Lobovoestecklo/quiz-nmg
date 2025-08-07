@@ -39,7 +39,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <TestTube className="h-4 w-4" />
                 </div>
-                <span className="font-semibold">Ассистент тестов</span>
+                <span className="font-semibold">Образовательный помощник</span>
               </div>
             </Link>
             <Tooltip>
